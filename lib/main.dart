@@ -48,10 +48,11 @@ class _PaintingARViewState extends State<PaintingARView> {
       ),
       body: Stack(
         children: [
-          ARKitSceneView(
-            detectionImagesGroupName: 'AR-Resources',
-            onARKitViewCreated: onARKitViewCreated,
-          ),
+            ARKitSceneView(
+              detectionImagesGroupName: 'AR-Resources',
+              maximumNumberOfTrackedImages: 1,
+              onARKitViewCreated: onARKitViewCreated,
+            ),
           if (!imageDetected)
             Positioned(
               bottom: 30,
@@ -141,7 +142,7 @@ class _PaintingARViewState extends State<PaintingARView> {
       final node = _createRestoredPaintingNode(anchor);
       arkitController.add(node, parentNodeName: anchor.nodeName);
 
-      debugPrint('✅ Dipinto rilevato: ${anchor.referenceImageName}');
+      debugPrint('Dipinto rilevato: ${anchor.referenceImageName}');
     }
   }
 
