@@ -4,10 +4,18 @@ PODS:
     - GLTFSceneKit
   - Flutter (1.0.0)
   - GLTFSceneKit (0.3.0)
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - sqflite_darwin (0.0.4):
+    - Flutter
+    - FlutterMacOS
 
 DEPENDENCIES:
   - arkit_plugin (from `.symlinks/plugins/arkit_plugin/ios`)
   - Flutter (from `Flutter`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
 
 SPEC REPOS:
   trunk:
@@ -18,11 +26,17 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/arkit_plugin/ios"
   Flutter:
     :path: Flutter
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  sqflite_darwin:
+    :path: ".symlinks/plugins/sqflite_darwin/darwin"
 
 SPEC CHECKSUMS:
   arkit_plugin: 82331267ea3c39ff432223c1ecf38d818b4897ba
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   GLTFSceneKit: d1b437c514ba2aed5555afb0fddd64e030612d57
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
 
 PODFILE CHECKSUM: 5ea6f68846091114c93fb01bf7c313344160c74e
 

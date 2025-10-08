@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:arkit_plugin/arkit_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
@@ -30,11 +31,16 @@ class PaintingARView extends StatefulWidget {
 
 class _PaintingARViewState extends State<PaintingARView> {
   late ARKitController arkitController;
+  Timer? timer;
   bool imageDetected = false;
   String? detectedImageName;
 
+  // Nome dell'immagine di riferimento (cartolina del quadro rovinato)
+  static const String referenceImageName = 'painting-1';
+
   @override
   void dispose() {
+    timer?.cancel();
     arkitController.dispose();
     super.dispose();
   }
@@ -47,12 +53,13 @@ class _PaintingARViewState extends State<PaintingARView> {
         backgroundColor: Colors.deepPurple,
       ),
       body: Stack(
+        fit: StackFit.expand,
         children: [
-            ARKitSceneView(
-              detectionImagesGroupName: 'AR-Resources',
-              maximumNumberOfTrackedImages: 1,
-              onARKitViewCreated: onARKitViewCreated,
-            ),
+          ARKitSceneView(
+            detectionImagesGroupName: 'AR-Resources',
+            maximumNumberOfTrackedImages: 1,
+            onARKitViewCreated: onARKitViewCreated,
+          ),
           if (!imageDetected)
             Positioned(
               bottom: 30,
@@ -65,14 +72,27 @@ class _PaintingARViewState extends State<PaintingARView> {
                   color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
-                  'Punta la fotocamera sul dipinto rovinato...',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
+                child: const Column(
+                  children: [
+                    Text(
+                      'Punta la fotocamera sulla cartolina\ndel quadro rovinato',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Cartolina: 21cm x 15cm\n(Immagine quadro: 20cm x 10cm)',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -93,11 +113,20 @@ class _PaintingARViewState extends State<PaintingARView> {
                     Icon(Icons.check_circle, color: Colors.white, size: 32),
                     SizedBox(height: 8),
                     Text(
-                      'Dipinto rilevato!\nEcco la versione restaurata',
+                      'Dipinto rilevato!',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Versione restaurata sovrapposta',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -112,46 +141,53 @@ class _PaintingARViewState extends State<PaintingARView> {
 
   void onARKitViewCreated(ARKitController controller) {
     arkitController = controller;
-
-    // Listener per il rilevamento delle immagini
     arkitController.onAddNodeForAnchor = _handleAddAnchor;
     arkitController.onUpdateNodeForAnchor = _handleUpdateAnchor;
+
+    debugPrint('✅ ARKit inizializzato correttamente');
+    debugPrint('🔍 In attesa di rilevare l\'immagine: $referenceImageName');
   }
 
   void _handleAddAnchor(ARKitAnchor anchor) {
+    debugPrint('🎯 Anchor rilevato! Tipo: ${anchor.runtimeType}');
+
     if (anchor is ARKitImageAnchor) {
-      _onImageDetected(anchor);
+      debugPrint('📸 Immagine rilevata! Nome: ${anchor.referenceImageName}');
+      debugPrint('📏 Dimensioni fisiche: ${anchor.referenceImagePhysicalSize}');
+
+      // Verifica che sia l'immagine corretta
+      if (anchor.referenceImageName == referenceImageName) {
+        debugPrint('✅ MATCH! È l\'immagine corretta: $referenceImageName');
+
+        setState(() {
+          imageDetected = true;
+          detectedImageName = anchor.referenceImageName;
+        });
+
+        // Crea il nodo con l'immagine restaurata
+        final node = _createRestoredPaintingNode(anchor);
+        arkitController.add(node, parentNodeName: anchor.nodeName);
+
+        debugPrint('🎨 Overlay restaurato applicato alla cartolina');
+      } else {
+        debugPrint('❌ MISMATCH! Rilevata: ${anchor.referenceImageName}, Attesa: $referenceImageName');
+      }
+    } else {
+      debugPrint('⚠️ Anchor non è un\'immagine, è: ${anchor.runtimeType}');
     }
   }
 
   void _handleUpdateAnchor(ARKitAnchor anchor) {
     if (anchor is ARKitImageAnchor && !imageDetected) {
-      _onImageDetected(anchor);
-    }
-  }
-
-  void _onImageDetected(ARKitImageAnchor anchor) {
-    // Verifica che sia l'immagine corretta
-    if (anchor.referenceImageName == 'painting-1') {
-      setState(() {
-        imageDetected = true;
-        detectedImageName = anchor.referenceImageName;
-      });
-
-      // Crea il piano con l'immagine restaurata
-      final node = _createRestoredPaintingNode(anchor);
-      arkitController.add(node, parentNodeName: anchor.nodeName);
-
-      debugPrint('Dipinto rilevato: ${anchor.referenceImageName}');
+      debugPrint('🔄 Update anchor immagine: ${anchor.referenceImageName}');
+      _handleAddAnchor(anchor);
     }
   }
 
   ARKitNode _createRestoredPaintingNode(ARKitImageAnchor anchor) {
-    // Ottieni le dimensioni dell'immagine fisica rilevata
     final width = anchor.referenceImagePhysicalSize.x;
     final height = anchor.referenceImagePhysicalSize.y;
 
-    // Crea il materiale con l'immagine restaurata
     final material = ARKitMaterial(
       diffuse: ARKitMaterialProperty.image('assets/painting.png'),
       doubleSided: true,
@@ -159,18 +195,16 @@ class _PaintingARViewState extends State<PaintingARView> {
       lightingModelName: ARKitLightingModel.constant,
     );
 
-    // Crea un piano delle stesse dimensioni dell'immagine rilevata
     final geometry = ARKitPlane(
       width: width,
       height: height,
       materials: [material],
     );
 
-    // Crea il nodo
     return ARKitNode(
-      name: 'restored_painting',
+      name: 'restoredPaintingNodes',
       geometry: geometry,
-      position: vector.Vector3(0, 0, 0.001),
+      position: vector.Vector3(0, 0, 0.001), // Leggermente sopra l'immagine rilevata
       eulerAngles: vector.Vector3.zero(),
     );
   }
