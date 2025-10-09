@@ -45,12 +45,8 @@ class _PaintingARViewState extends State<PaintingARView> {
   static const bool useTexture = true;
   static const double planeOffset = 0.002;
 
-  // PROPORZIONI CORRETTE: Dimensioni reali del quadro rispetto alla cartolina
-  // Cartolina: 14cm (larghezza) x 20cm (altezza) - quella rilevata da ARKit
-  // Quadro da mostrare: copre quasi tutta la cartolina
-  // Se il quadro è leggermente più piccolo, regola questi valori
-  static const double paintingWidthRatio = 1.0;   // 100% della larghezza rilevata
-  static const double paintingHeightRatio = 1.0;  // 100% dell'altezza rilevata
+  static const double paintingWidthRatio = 1.43;
+  static const double paintingHeightRatio = 0.94;
 
   @override
   void initState() {
@@ -164,7 +160,7 @@ class _PaintingARViewState extends State<PaintingARView> {
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.9),
+                  color: Colors.green.withValues(alpha: 1.0),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Column(
@@ -285,7 +281,8 @@ class _PaintingARViewState extends State<PaintingARView> {
       name: 'overlayFront',
       geometry: plane,
       position: vector.Vector3(0, 0, zOffset),
-      eulerAngles: vector.Vector3(-math.pi, 0, 0),
+      // Ruota di 180° per girare il quadro
+      eulerAngles: vector.Vector3(0 , math.pi / 2 + math.pi, 0),
       renderingOrder: 2000,
     );
   }
