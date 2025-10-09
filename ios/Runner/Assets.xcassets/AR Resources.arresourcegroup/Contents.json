@@ -5,7 +5,10 @@
   },
   "resources" : [
     {
-      "filename" : "painting-1"
+      "filename" : "painting-1.arreferenceimage"
+    },
+    {
+      "filename" : "painting.arreferenceimage"
     }
   ]
 }
