@@ -40,12 +40,14 @@ class _PaintingARViewState extends State<PaintingARView> {
   bool imageDetected = false;
   String? detectedImageName;
   String? cachedImageUrl;
+  double transparency = 1.0; // Valore dello slider (0.0 = trasparente, 1.0 = opaco)
+  ARKitImageAnchor? currentAnchor; // Salva l'anchor corrente
 
   static const String referenceImageName = 'painting-1';
   static const bool useTexture = true;
-  static const double planeOffset = 0.002;
+  static const double planeOffset = 0.003;
 
-  static const double paintingWidthRatio = 1.43;
+  static const double paintingWidthRatio = 1.44;
   static const double paintingHeightRatio = 0.94;
 
   @override
@@ -71,9 +73,9 @@ class _PaintingARViewState extends State<PaintingARView> {
       await file.writeAsBytes(bytes, flush: true);
 
       cachedImageUrl = file.uri.toString();
-      debugPrint('✅ Immagine pre-caricata: $cachedImageUrl');
+      debugPrint('Immagine pre-caricata: $cachedImageUrl');
     } catch (e) {
-      debugPrint('❌ Errore pre-caricamento immagine: $e');
+      debugPrint('Errore pre-caricamento immagine: $e');
     }
   }
 
@@ -81,15 +83,35 @@ class _PaintingARViewState extends State<PaintingARView> {
     setState(() {
       imageDetected = false;
       detectedImageName = null;
+      transparency = 1.0;
+      currentAnchor = null;
     });
 
     try {
       arkitController.remove('overlayFront');
     } catch (e) {
-      debugPrint('⚠️ Errore rimozione overlay: $e');
+      debugPrint('Errore rimozione overlay: $e');
     }
 
-    debugPrint('🔄 Detection resettata');
+    debugPrint('Detection resettata');
+  }
+
+  // Funzione per aggiornare la trasparenza nell'AR (chiamata solo quando rilasci lo slider)
+  void _updateTransparency(double value) async {
+    if (imageDetected && currentAnchor != null && cachedImageUrl != null) {
+      try {
+        // Rimuovi il vecchio nodo
+        arkitController.remove('overlayFront');
+
+        // Ricrea il nodo con la nuova trasparenza
+        final overlay = await _buildOverlayNode(currentAnchor!, planeOffset);
+        arkitController.add(overlay, parentNodeName: currentAnchor!.nodeName);
+
+        debugPrint('Trasparenza aggiornata: ${(transparency * 100).toInt()}%');
+      } catch (e) {
+        debugPrint('Errore aggiornamento trasparenza: $e');
+      }
+    }
   }
 
   @override
@@ -160,7 +182,7 @@ class _PaintingARViewState extends State<PaintingARView> {
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 1.0),
+                  color: Colors.green.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Column(
@@ -178,12 +200,115 @@ class _PaintingARViewState extends State<PaintingARView> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Versione restaurata sovrapposta',
+                      'Usa lo slider per confrontare',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
                       ),
                       textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          // SLIDER PER CONTROLLARE LA TRASPARENZA
+          if (imageDetected)
+            Positioned(
+              bottom: 30,
+              left: 0,
+              right: 0,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Quadro Rovinato',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '${(transparency * 100).toInt()}%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Text(
+                          'Restaurato',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SliderTheme(
+                      data: SliderThemeData(
+                        activeTrackColor: Colors.deepPurple,
+                        inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
+                        thumbColor: Colors.deepPurple,
+                        overlayColor: Colors.deepPurple.withValues(alpha: 0.2),
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 12,
+                        ),
+                        overlayShape: const RoundSliderOverlayShape(
+                          overlayRadius: 24,
+                        ),
+                      ),
+                      child: Slider(
+                        value: transparency,
+                        min: 0.0,
+                        max: 1.0,
+                        divisions: 100,
+                        // Durante il trascinamento: aggiorna solo l'UI (fluido)
+                        onChanged: (value) {
+                          setState(() {
+                            transparency = value;
+                          });
+                        },
+                        // Quando rilasci: aggiorna l'AR (stabile)
+                        onChangeEnd: (value) {
+                          _updateTransparency(value);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.compare, color: Colors.white70, size: 16),
+                        SizedBox(width: 8),
+                        Text(
+                          'Scorri per confrontare',
+                          style: TextStyle(
+                            color: Colors.white60,
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -198,39 +323,40 @@ class _PaintingARViewState extends State<PaintingARView> {
     arkitController = controller;
     arkitController.onAddNodeForAnchor = _handleAddAnchor;
 
-    debugPrint('✅ ARKit inizializzato correttamente');
-    debugPrint('🔍 In attesa di rilevare l\'immagine: $referenceImageName');
-    debugPrint('📁 Gruppo detection: AR Resources');
+    debugPrint('ARKit inizializzato correttamente');
+    debugPrint('In attesa di rilevare l\'immagine: $referenceImageName');
+    debugPrint('Gruppo detection: AR Resources');
   }
 
   void _handleAddAnchor(ARKitAnchor anchor) async {
-    debugPrint('🎯 Anchor rilevato! Tipo: ${anchor.runtimeType}');
-    debugPrint('📍 Nome anchor: ${anchor.nodeName}');
-    debugPrint('📊 Identificatore: ${anchor.identifier}');
+    debugPrint('Anchor rilevato! Tipo: ${anchor.runtimeType}');
+    debugPrint('Nome anchor: ${anchor.nodeName}');
+    debugPrint('Identificatore: ${anchor.identifier}');
 
     if (anchor is ARKitImageAnchor) {
-      debugPrint('📸 ✅ È UN IMAGE ANCHOR!');
-      debugPrint('📸 Nome immagine: ${anchor.referenceImageName}');
-      debugPrint('📏 Dimensioni: ${anchor.referenceImagePhysicalSize}');
-      debugPrint('🔍 Tracked: ${anchor.isTracked}');
+      debugPrint('È UN IMAGE ANCHOR!');
+      debugPrint('Nome immagine: ${anchor.referenceImageName}');
+      debugPrint('Dimensioni: ${anchor.referenceImagePhysicalSize}');
+      debugPrint('Tracked: ${anchor.isTracked}');
 
       if (anchor.referenceImageName == referenceImageName) {
-        debugPrint('✅ MATCH! È l\'immagine corretta: $referenceImageName');
+        debugPrint('MATCH! È l\'immagine corretta: $referenceImageName');
 
         setState(() {
           imageDetected = true;
           detectedImageName = anchor.referenceImageName;
+          currentAnchor = anchor; // Salva l'anchor
         });
 
         final overlay = await _buildOverlayNode(anchor, planeOffset);
         arkitController.add(overlay, parentNodeName: anchor.nodeName);
 
-        debugPrint('🎨 Overlay aggiunto');
+        debugPrint('Overlay aggiunto');
       } else {
-        debugPrint('❌ MISMATCH! Rilevata: ${anchor.referenceImageName}, Attesa: $referenceImageName');
+        debugPrint('MISMATCH! Rilevata: ${anchor.referenceImageName}, Attesa: $referenceImageName');
       }
     } else {
-      debugPrint('❌ NON è un image anchor, è: ${anchor.runtimeType}');
+      debugPrint('NON è un image anchor, è: ${anchor.runtimeType}');
     }
   }
 
@@ -241,7 +367,7 @@ class _PaintingARViewState extends State<PaintingARView> {
     final double w = anchor.referenceImagePhysicalSize.x * paintingWidthRatio;
     final double h = anchor.referenceImagePhysicalSize.y * paintingHeightRatio;
 
-    debugPrint('📐 Overlay size (m): width=$w, height=$h (zOffset=$zOffset)');
+    debugPrint('Overlay size (m): width=$w, height=$h (zOffset=$zOffset)');
 
     ARKitMaterial material;
 
@@ -249,7 +375,7 @@ class _PaintingARViewState extends State<PaintingARView> {
       material = ARKitMaterial(
         diffuse: ARKitMaterialProperty.image(cachedImageUrl!),
         doubleSided: true,
-        transparency: 1.0,
+        transparency: transparency, // Usa il valore dello slider
         lightingModelName: ARKitLightingModel.constant,
       );
     } else if (useTexture) {
@@ -263,14 +389,14 @@ class _PaintingARViewState extends State<PaintingARView> {
       material = ARKitMaterial(
         diffuse: ARKitMaterialProperty.image(file.uri.toString()),
         doubleSided: true,
-        transparency: 1.0,
+        transparency: transparency,
         lightingModelName: ARKitLightingModel.constant,
       );
     } else {
       material = ARKitMaterial(
         diffuse: ARKitMaterialProperty.color(Colors.green),
         doubleSided: true,
-        transparency: 1.0,
+        transparency: transparency,
         lightingModelName: ARKitLightingModel.constant,
       );
     }
@@ -281,8 +407,7 @@ class _PaintingARViewState extends State<PaintingARView> {
       name: 'overlayFront',
       geometry: plane,
       position: vector.Vector3(0, 0, zOffset),
-      // Ruota di 180° per girare il quadro
-      eulerAngles: vector.Vector3(0 , math.pi / 2 + math.pi, 0),
+      eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
       renderingOrder: 2000,
     );
   }
