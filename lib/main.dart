@@ -211,6 +211,7 @@ class _PaintingARViewState extends State<PaintingARView> {
                 ),
               ),
             ),
+
           // SLIDER PER CONTROLLARE LA TRASPARENZA
           if (imageDetected)
             Positioned(
