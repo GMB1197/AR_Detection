@@ -13,42 +13,75 @@ class HomeScreen extends StatelessWidget {
         slivers: [
           // AppBar espandibile
           SliverAppBar(
-            expandedHeight: 150,
+            expandedHeight: 200,
             floating: false,
             pinned: true,
             backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
               title: const Text(
-                'AR Restauro Dipinti',
+                'AR Restauro',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      offset: Offset(0, 1),
-                      blurRadius: 3,
-                      color: Colors.black45,
-                    ),
-                  ],
+                  letterSpacing: 1.2,
+                  color: Colors.white,
                 ),
               ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black,
-                      Colors.white,
-                    ],
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Gradient background
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.black,
+                          Color(0xFF1a1a1a),
+                          Color(0xFF2d2d2d),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.palette,
-                    size: 80,
-                    color: Colors.white24,
+                  // Icon centered con bordo
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.palette,
+                        size: 60,
+                        color: Colors.white38,
+                      ),
+                    ),
                   ),
-                ),
+                  // Bottom gradient fade
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 60,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.8),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -62,14 +95,17 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Scegli un dipinto da restaurare',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.black87,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Inquadra la cartolina del quadro danneggiato con la fotocamera per vedere la versione restaurata in realtà aumentata',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: TextStyle(
+                      fontSize: 16,
                       color: Colors.grey[600],
                     ),
                   ),

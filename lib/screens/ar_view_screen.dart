@@ -18,11 +18,13 @@ class ARViewScreen extends StatefulWidget {
 }
 
 class _ARViewScreenState extends State<ARViewScreen> {
-  late ARKitController arkitController;
+  ARKitController? arkitController;
   bool imageDetected = false;
   String? cachedImageUrl;
   double transparency = 1.0;
   ARKitImageAnchor? currentAnchor;
+  Timer? _debounceTimer;
+  bool _isUpdatingAR = false;
 
   @override
   void initState() {
@@ -32,7 +34,8 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
   @override
   void dispose() {
-    arkitController.dispose();
+    _debounceTimer?.cancel();
+    arkitController?.dispose();
     super.dispose();
   }
 
@@ -43,31 +46,65 @@ class _ARViewScreenState extends State<ARViewScreen> {
   }
 
   void _resetDetection() {
-    setState(() {
-      imageDetected = false;
-      transparency = 1.0;
-      currentAnchor = null;
-    });
+    // Cancella il timer attivo
+    _debounceTimer?.cancel();
 
+    // Rimuovi l'overlay
     try {
-      arkitController.remove('overlayFront');
+      arkitController?.remove('overlayFront');
     } catch (e) {
       debugPrint('Errore rimozione overlay: $e');
     }
 
+    // Reset completo dello stato
+    setState(() {
+      imageDetected = false;
+      transparency = 1.0;
+      currentAnchor = null;
+      _isUpdatingAR = false;
+    });
+
+    // Reinizializza il listener per anchor
+    if (arkitController != null) {
+      arkitController!.onAddNodeForAnchor = _handleAddAnchor;
+    }
+
     debugPrint('Detection resettata per: ${widget.painting.title}');
+    debugPrint('Pronto per nuovo rilevamento');
   }
 
   void _updateTransparency(double value) {
-    if (imageDetected && currentAnchor != null && cachedImageUrl != null) {
-      ARService.updateOverlayTransparency(
-        controller: arkitController,
-        anchor: currentAnchor!,
-        painting: widget.painting,
-        cachedImageUrl: cachedImageUrl!,
-        transparency: value,
-      );
-    }
+    // Aggiorna l'UI immediatamente per fluidità
+    setState(() {
+      transparency = value;
+    });
+
+    // Salta l'aggiornamento AR se uno è già in corso
+    if (_isUpdatingAR) return;
+
+    // Cancella il timer precedente
+    _debounceTimer?.cancel();
+
+    // Aggiorna l'AR con un debounce molto breve (16ms = ~60fps)
+    _debounceTimer = Timer(const Duration(milliseconds: 16), () {
+      if (imageDetected && currentAnchor != null && cachedImageUrl != null && arkitController != null) {
+        _isUpdatingAR = true;
+
+        try {
+          ARService.updateOverlayTransparency(
+            controller: arkitController!,
+            anchor: currentAnchor!,
+            painting: widget.painting,
+            cachedImageUrl: cachedImageUrl!,
+            transparency: value,
+          );
+        } catch (e) {
+          debugPrint('Errore aggiornamento trasparenza: $e');
+        } finally {
+          _isUpdatingAR = false;
+        }
+      }
+    });
   }
 
   @override
@@ -76,6 +113,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
       appBar: AppBar(
         title: Text(widget.painting.title),
         backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         actions: [
           if (imageDetected)
             IconButton(
@@ -88,20 +126,16 @@ class _ARViewScreenState extends State<ARViewScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Vista AR
           ARKitSceneView(
             detectionImagesGroupName: 'AR Resources',
             maximumNumberOfTrackedImages: 1,
             onARKitViewCreated: _onARKitViewCreated,
           ),
 
-          // Istruzioni iniziali
           if (!imageDetected) _buildInstructions(),
 
-          // Banner di rilevamento
           if (imageDetected) _buildDetectionBanner(),
 
-          // Slider trasparenza
           if (imageDetected)
             Positioned(
               bottom: 30,
@@ -109,12 +143,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
               right: 0,
               child: TransparencySlider(
                 value: transparency,
-                onChanged: (value) {
-                  setState(() {
-                    transparency = value;
-                  });
-                },
-                onChangeEnd: _updateTransparency,
+                onChanged: _updateTransparency,
               ),
             ),
         ],
@@ -202,7 +231,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
   void _onARKitViewCreated(ARKitController controller) {
     arkitController = controller;
-    arkitController.onAddNodeForAnchor = _handleAddAnchor;
+    arkitController!.onAddNodeForAnchor = _handleAddAnchor;
 
     debugPrint('ARKit inizializzato per: ${widget.painting.title}');
     debugPrint('In attesa di: ${widget.painting.referenceImageName}');
@@ -213,6 +242,12 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
     debugPrint('Image anchor rilevato: ${anchor.referenceImageName}');
 
+    // Controlla se stiamo già tracciando un'immagine
+    if (imageDetected) {
+      debugPrint('Anchor già rilevato, ignoro nuovi anchor');
+      return;
+    }
+
     if (anchor.referenceImageName == widget.painting.referenceImageName) {
       debugPrint('MATCH! Quadro corretto rilevato');
 
@@ -221,14 +256,14 @@ class _ARViewScreenState extends State<ARViewScreen> {
         currentAnchor = anchor;
       });
 
-      if (cachedImageUrl != null) {
+      if (cachedImageUrl != null && arkitController != null) {
         final overlay = ARService.buildOverlayNode(
           anchor: anchor,
           painting: widget.painting,
           cachedImageUrl: cachedImageUrl!,
           transparency: transparency,
         );
-        arkitController.add(overlay, parentNodeName: anchor.nodeName);
+        arkitController!.add(overlay, parentNodeName: anchor.nodeName);
         debugPrint('Overlay aggiunto per: ${widget.painting.title}');
       }
     } else {

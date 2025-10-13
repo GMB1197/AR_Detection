@@ -16,6 +16,7 @@ class PaintingCard extends StatelessWidget {
     return Card(
       elevation: 4,
       clipBehavior: Clip.antiAlias,
+      color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -92,8 +93,10 @@ class PaintingCard extends StatelessWidget {
                   children: [
                     Text(
                       painting.title,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.black,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -101,9 +104,10 @@ class PaintingCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       painting.artist,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: TextStyle(
                         color: Colors.grey[600],
                         fontStyle: FontStyle.italic,
+                        fontSize: 16,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -111,7 +115,10 @@ class PaintingCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       painting.description,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.black87,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
