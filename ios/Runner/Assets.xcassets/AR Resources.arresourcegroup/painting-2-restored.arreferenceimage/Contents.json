@@ -1,0 +1,15 @@
+{
+  "images" : [
+    {
+      "filename" : "painting-2-restored.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "width" : 0.25
+  }
+}

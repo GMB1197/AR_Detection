@@ -5,10 +5,22 @@
   },
   "resources" : [
     {
-      "filename" : "painting-1.arreferenceimage"
+      "filename" : "painting-1-damaged.arreferenceimage"
     },
     {
-      "filename" : "painting.arreferenceimage"
+      "filename" : "painting-1-restored.arreferenceimage"
+    },
+    {
+      "filename" : "painting-2-damaged.arreferenceimage"
+    },
+    {
+      "filename" : "painting-2-restored.arreferenceimage"
+    },
+    {
+      "filename" : "painting-3-damaged.arreferenceimage"
+    },
+    {
+      "filename" : "painting-3-restored.arreferenceimage"
     }
   ]
 }
