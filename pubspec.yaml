@@ -75,6 +75,7 @@ flutter:
 
     # PAINTING-4: Madonna → Vista chiesa
      - assets/painting-4.png              # Dipinto AR Release
+     - assets/trinita_1.png               # Chiesa con riquadro
      - assets/trinita_1_complete.png               # Chiesa con riquadro
      - assets/painting-4-overlay.png      # (overlay AR)
 

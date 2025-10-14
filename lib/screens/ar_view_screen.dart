@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:arkit_plugin/arkit_plugin.dart';
 import 'package:flutter/material.dart';
+import 'package:vector_math/vector_math_64.dart' as vector;
 import '../models/painting_model.dart';
 import '../services/ar_service.dart';
 import '../widgets/transparency_slider.dart';
@@ -63,6 +64,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
     try {
       arkitController?.remove('overlayFront');
       arkitController?.remove('overlaySecondary');
+      arkitController?.remove('overlayFixed');
+      arkitController?.remove('churchBackground');
+      arkitController?.remove('paintingInChurch');
     } catch (e) {
       debugPrint('Errore rimozione overlay: $e');
     }
@@ -115,7 +119,6 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Determina se mostrare lo slider (solo per dipinti di restauro, non per 4, 6, 7)
     final bool showSlider = !['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
 
     return Scaffold(
@@ -145,7 +148,6 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
           if (imageDetected && _showBanner) _buildDetectionBanner(),
 
-          // Mostra lo slider SOLO per dipinti di restauro (1, 2, 3, 5)
           if (imageDetected && showSlider)
             Positioned(
               bottom: 30,
@@ -162,7 +164,6 @@ class _ARViewScreenState extends State<ARViewScreen> {
   }
 
   Widget _buildInstructions() {
-    // Testo diverso per dipinti speciali (4, 6, 7)
     final bool isSpecialEffect = ['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
     final String instructionText = isSpecialEffect
         ? 'Inquadra il quadro per vedere l\'effetto AR'
@@ -206,7 +207,6 @@ class _ARViewScreenState extends State<ARViewScreen> {
   }
 
   Widget _buildDetectionBanner() {
-    // Testo diverso per dipinti speciali (4, 6, 7) - senza slider
     final bool showSlider = !['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
     final String bannerSubtext = showSlider
         ? 'Usa lo slider per confrontare'
@@ -278,7 +278,6 @@ class _ARViewScreenState extends State<ARViewScreen> {
         currentAnchor = anchor;
       });
 
-      // Nascondi il banner dopo 2.5 secondi
       _bannerTimer?.cancel();
       _bannerTimer = Timer(const Duration(milliseconds: 2500), () {
         if (mounted) {
@@ -289,14 +288,20 @@ class _ARViewScreenState extends State<ARViewScreen> {
       });
 
       if (cachedImageUrl != null && arkitController != null) {
-        final overlay = ARService.buildOverlayNode(
-          anchor: anchor,
-          painting: widget.painting,
-          cachedImageUrl: cachedImageUrl!,
-          transparency: transparency,
-        );
-        arkitController!.add(overlay, parentNodeName: anchor.nodeName);
-        debugPrint('Overlay principale aggiunto per: ${widget.painting.title}');
+        // LOGICA PER PAINTING-4: Sfondo immersivo fisso
+        if (widget.painting.id == 'painting-4') {
+          _createImmersiveChurchBackground(anchor);
+        } else {
+          // Comportamento normale per altri dipinti
+          final overlay = ARService.buildOverlayNode(
+            anchor: anchor,
+            painting: widget.painting,
+            cachedImageUrl: cachedImageUrl!,
+            transparency: transparency,
+          );
+          arkitController!.add(overlay, parentNodeName: anchor.nodeName);
+          debugPrint('Overlay normale aggiunto per: ${widget.painting.title}');
+        }
 
         if (widget.painting.secondaryOverlayPath != null && cachedSecondaryImageUrl != null) {
           final secondaryOverlay = ARService.buildSecondaryOverlayNode(
@@ -312,5 +317,90 @@ class _ARViewScreenState extends State<ARViewScreen> {
     } else {
       debugPrint('Quadro diverso rilevato, ignorato');
     }
+  }
+
+  // METODO: Crea sfondo chiesa immersivo fisso
+  void _createImmersiveChurchBackground(ARKitImageAnchor anchor) {
+    debugPrint('Creazione sfondo chiesa immersivo...');
+
+    // Ottieni la posizione iniziale del marker
+    final anchorTransform = anchor.transform;
+    final anchorX = anchorTransform.getColumn(3).x;
+    final anchorY = anchorTransform.getColumn(3).y;
+    final anchorZ = anchorTransform.getColumn(3).z;
+
+    // SFONDO FISSO: Pannello gigante con la chiesa
+    final backgroundGeometry = ARKitPlane(
+      width: 4.0,  // 4 metri di larghezza
+      height: 6.0, // 6 metri di altezza
+    );
+
+    final backgroundMaterial = ARKitMaterial(
+      diffuse: ARKitMaterialProperty.image(cachedImageUrl!),
+      transparency: 1.0,
+      doubleSided: true,
+    );
+
+    // Crea il nodo dello sfondo
+    final backgroundNode = ARKitNode(
+      name: 'churchBackground',
+      geometry: backgroundGeometry,
+      position: vector.Vector3(
+        anchorX,      // Stessa X del marker
+        anchorY + 0.5, // Leggermente più in alto
+        anchorZ - 1.5, // 1.5 metri davanti (verso l'utente)
+      ),
+    );
+
+    // Applica il materiale
+    backgroundNode.geometry?.materials.value = [backgroundMaterial];
+
+    // IMPORTANTE: Aggiungi direttamente alla scena root (NON come figlio dell'anchor!)
+    arkitController!.add(backgroundNode);
+
+    debugPrint('Sfondo chiesa creato e SGANCIATO dal marker');
+    debugPrint('Posizione fissa in coordinate world');
+    debugPrint('Dimensioni: 4m x 6m');
+
+    // Ora aggiungi il dipinto nel riquadro nero
+    _addPaintingInChurch(anchor, anchorX, anchorY, anchorZ);
+  }
+
+  // METODO: Posiziona il dipinto nel riquadro della chiesa
+  void _addPaintingInChurch(ARKitImageAnchor anchor, double anchorX, double anchorY, double anchorZ) {
+    debugPrint('Aggiunta dipinto nel riquadro chiesa...');
+
+    // Dimensioni del dipinto - più grande per coprire tutta l'area trasparente
+    final paintingWidth = 1.0;   // Aumentato per larghezza
+    final paintingHeight = 1.7;  // Aumentato per altezza
+
+    final paintingGeometry = ARKitPlane(
+      width: paintingWidth,
+      height: paintingHeight,
+    );
+
+    final paintingMaterial = ARKitMaterial(
+      diffuse: ARKitMaterialProperty.image(widget.painting.damagedImagePath),
+      transparency: 1.0,
+    );
+
+    final paintingNode = ARKitNode(
+      name: 'paintingInChurch',
+      geometry: paintingGeometry,
+      position: vector.Vector3(
+        anchorX,        // Stessa X
+        anchorY - 1.0,  // MOLTO PIÙ IN BASSO per coprire area trasparente
+        anchorZ - 1.49, // Leggermente davanti alla chiesa (evita z-fighting)
+      ),
+    );
+
+    // Applica il materiale
+    paintingNode.geometry?.materials.value = [paintingMaterial];
+
+    arkitController!.add(paintingNode);
+
+    debugPrint('Dipinto posizionato nel riquadro!');
+    debugPrint('Dimensioni: ${paintingWidth}m x ${paintingHeight}m');
+    debugPrint('Posizione Y: ${anchorY - 1.8}');
   }
 }

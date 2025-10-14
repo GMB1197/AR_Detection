@@ -42,20 +42,13 @@ class PaintingsData {
       artist: 'Cimabue',
       description: 'Maestà con angeli, appare nell\'altare della chiesa',
       damagedImagePath: 'assets/painting-4-overlay.png',
-      restoredImagePath: 'assets/trinita_1_complete.png',
+      restoredImagePath: 'assets/trinita_1.png',
       referenceImageName: 'painting-4',
       widthRatio: 3.0,
-      heightRatio: 2.2,
+      heightRatio: 3.0,
       offsetX: 0.0,
       offsetY: 0.0,
-      offsetZ: 0.003,
-      // SECONDO OVERLAY: Dipinto DIETRO la chiesa
-      // secondaryOverlayPath: 'assets/painting-4-overlay.png',  // Stesso file della home
-      // secondaryWidthRatio: 0.35,   // Ridotto per entrare nel riquadro
-      // secondaryHeightRatio: 0.52,  // Proporzioni del riquadro
-      // secondaryOffsetX: 0.0,       // Centrato
-      // secondaryOffsetY: -0.42,     // Spostato più in basso nel riquadro
-      // secondaryOffsetZ: 0.002,     // Dietro la chiesa
+      offsetZ: 0.000,
     ),
 
     PaintingModel(

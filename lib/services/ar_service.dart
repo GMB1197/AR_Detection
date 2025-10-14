@@ -34,7 +34,6 @@ class ARService {
     required String cachedImageUrl,
     required double transparency,
   }) {
-    // Calcola le dimensioni basate sui ratio del modello
     final double w = anchor.referenceImagePhysicalSize.x * painting.widthRatio;
     final double h = anchor.referenceImagePhysicalSize.y * painting.heightRatio;
 
@@ -54,14 +53,13 @@ class ARService {
       materials: [material],
     );
 
-    // Applica gli offset dal modello per posizionamento personalizzato
     return ARKitNode(
       name: 'overlayFront',
       geometry: plane,
       position: vector.Vector3(
-        painting.offsetX,  // Offset orizzontale
-        painting.offsetY,  // Offset verticale
-        painting.offsetZ,  // Distanza dalla superficie
+        painting.offsetX,
+        painting.offsetY,
+        painting.offsetZ,
       ),
       eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
       renderingOrder: 2000,
@@ -78,7 +76,6 @@ class ARService {
     required double transparency,
   }) {
     try {
-      // Rimuovi overlay principale
       controller.remove('overlayFront');
       final overlay = buildOverlayNode(
         anchor: anchor,
@@ -88,7 +85,6 @@ class ARService {
       );
       controller.add(overlay, parentNodeName: anchor.nodeName);
 
-      // Aggiorna anche il secondo overlay se presente
       if (painting.secondaryOverlayPath != null && cachedSecondaryImageUrl != null) {
         controller.remove('overlaySecondary');
         final secondaryOverlay = buildSecondaryOverlayNode(
@@ -106,7 +102,7 @@ class ARService {
     }
   }
 
-  /// Crea il nodo per il secondo overlay (es. dipinto dentro la chiesa)
+  /// Crea il nodo per il secondo overlay
   static ARKitNode buildSecondaryOverlayNode({
     required ARKitImageAnchor anchor,
     required PaintingModel painting,
@@ -138,10 +134,51 @@ class ARService {
       position: vector.Vector3(
         painting.secondaryOffsetX ?? 0.0,
         painting.secondaryOffsetY ?? 0.0,
-        painting.secondaryOffsetZ ?? 0.002,  // DIETRO la chiesa
+        painting.secondaryOffsetZ ?? 0.002,
       ),
       eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
-      renderingOrder: 1999,  // DIETRO la chiesa (che ha 2000)
+      renderingOrder: 1999,
+    );
+  }
+
+  /// Crea un overlay fisso nelle coordinate world (non segue il marker)
+  static ARKitNode buildFixedWorldOverlay({
+    required ARKitImageAnchor anchor,
+    required PaintingModel painting,
+    required String cachedImageUrl,
+    required double transparency,
+  }) {
+    final double w = anchor.referenceImagePhysicalSize.x * painting.widthRatio;
+    final double h = anchor.referenceImagePhysicalSize.y * painting.heightRatio;
+
+    debugPrint('Fixed overlay size: width=$w m, height=$h m');
+
+    final material = ARKitMaterial(
+      diffuse: ARKitMaterialProperty.image(cachedImageUrl),
+      doubleSided: true,
+      transparency: transparency,
+      lightingModelName: ARKitLightingModel.constant,
+    );
+
+    final plane = ARKitPlane(
+      width: w,
+      height: h,
+      materials: [material],
+    );
+
+    // Usa la transform dell'anchor per posizione world
+    final m = anchor.transform;
+
+    return ARKitNode(
+      name: 'overlayFixed',
+      geometry: plane,
+      position: vector.Vector3(
+        m.getColumn(3).x + painting.offsetX,
+        m.getColumn(3).y + painting.offsetY,
+        m.getColumn(3).z + painting.offsetZ,
+      ),
+      eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
+      renderingOrder: 2000,
     );
   }
 }
