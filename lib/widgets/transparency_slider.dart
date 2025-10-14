@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 class TransparencySlider extends StatelessWidget {
   final double value;
   final ValueChanged<double> onChanged;
+  final ValueChanged<double>? onChangeStart;  // NUOVO
   final ValueChanged<double>? onChangeEnd;
 
   const TransparencySlider({
     super.key,
     required this.value,
     required this.onChanged,
+    this.onChangeStart,  // NUOVO
     this.onChangeEnd,
   });
 
@@ -73,13 +75,15 @@ class TransparencySlider extends StatelessWidget {
               overlayShape: const RoundSliderOverlayShape(
                 overlayRadius: 24,
               ),
+              trackHeight: 4.0,  // NUOVO: traccia più spessa
             ),
             child: Slider(
               value: value,
               min: 0.0,
               max: 1.0,
-              divisions: 100,
+              // RIMOSSO: divisions per fluidità totale
               onChanged: onChanged,
+              onChangeStart: onChangeStart,  // NUOVO
               onChangeEnd: onChangeEnd,
             ),
           ),

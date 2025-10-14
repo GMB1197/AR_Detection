@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:arkit_plugin/arkit_plugin.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
 import '../models/painting_model.dart';
 import '../services/ar_service.dart';
@@ -25,10 +26,10 @@ class _ARViewScreenState extends State<ARViewScreen> {
   String? cachedSecondaryImageUrl;
   double transparency = 1.0;
   ARKitImageAnchor? currentAnchor;
-  Timer? _debounceTimer;
   Timer? _bannerTimer;
   bool _showBanner = false;
-  bool _isUpdatingAR = false;
+  bool _isARKitReady = false;
+  bool _updateScheduled = false;
 
   @override
   void initState() {
@@ -38,7 +39,6 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
     _bannerTimer?.cancel();
     arkitController?.dispose();
     super.dispose();
@@ -58,7 +58,6 @@ class _ARViewScreenState extends State<ARViewScreen> {
   }
 
   void _resetDetection() {
-    _debounceTimer?.cancel();
     _bannerTimer?.cancel();
 
     try {
@@ -76,7 +75,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
       _showBanner = false;
       transparency = 1.0;
       currentAnchor = null;
-      _isUpdatingAR = false;
+      _updateScheduled = false;
     });
 
     if (arkitController != null) {
@@ -91,30 +90,36 @@ class _ARViewScreenState extends State<ARViewScreen> {
       transparency = value;
     });
 
-    if (_isUpdatingAR) return;
+    // Usa SchedulerBinding per aggiornare dopo il frame corrente
+    if (!_updateScheduled) {
+      _updateScheduled = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _updateScheduled = false;
+        _performARUpdate();
+      });
+    }
+  }
 
-    _debounceTimer?.cancel();
-
-    _debounceTimer = Timer(const Duration(milliseconds: 16), () {
-      if (imageDetected && currentAnchor != null && cachedImageUrl != null && arkitController != null) {
-        _isUpdatingAR = true;
-
-        try {
-          ARService.updateOverlayTransparency(
-            controller: arkitController!,
-            anchor: currentAnchor!,
-            painting: widget.painting,
-            cachedImageUrl: cachedImageUrl!,
-            cachedSecondaryImageUrl: cachedSecondaryImageUrl,
-            transparency: value,
-          );
-        } catch (e) {
-          debugPrint('Errore aggiornamento trasparenza: $e');
-        } finally {
-          _isUpdatingAR = false;
-        }
+  void _performARUpdate() {
+    if (imageDetected && currentAnchor != null && cachedImageUrl != null && arkitController != null) {
+      try {
+        ARService.updateOverlayTransparency(
+          controller: arkitController!,
+          anchor: currentAnchor!,
+          painting: widget.painting,
+          cachedImageUrl: cachedImageUrl!,
+          cachedSecondaryImageUrl: cachedSecondaryImageUrl,
+          transparency: transparency,
+        );
+      } catch (e) {
+        debugPrint('Errore aggiornamento trasparenza: $e');
       }
-    });
+    }
+  }
+
+  void _onSliderChangeEnd(double value) {
+    // Forza un ultimo aggiornamento quando l'utente rilascia lo slider
+    _performARUpdate();
   }
 
   @override
@@ -144,7 +149,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
             onARKitViewCreated: _onARKitViewCreated,
           ),
 
-          if (!imageDetected) _buildInstructions(),
+          if (!_isARKitReady) _buildLoadingOverlay(),
+
+          if (!imageDetected && _isARKitReady) _buildInstructions(),
 
           if (imageDetected && _showBanner) _buildDetectionBanner(),
 
@@ -156,9 +163,44 @@ class _ARViewScreenState extends State<ARViewScreen> {
               child: TransparencySlider(
                 value: transparency,
                 onChanged: _updateTransparency,
+                onChangeEnd: _onSliderChangeEnd,
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingOverlay() {
+    return Container(
+      color: Colors.black.withValues(alpha: 0.9),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              strokeWidth: 3,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Inizializzazione AR...',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Preparazione della fotocamera',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.6),
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -255,6 +297,14 @@ class _ARViewScreenState extends State<ARViewScreen> {
     arkitController = controller;
     arkitController!.onAddNodeForAnchor = _handleAddAnchor;
 
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _isARKitReady = true;
+        });
+      }
+    });
+
     debugPrint('ARKit inizializzato per: ${widget.painting.title}');
     debugPrint('In attesa di: ${widget.painting.referenceImageName}');
   }
@@ -288,11 +338,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
       });
 
       if (cachedImageUrl != null && arkitController != null) {
-        // LOGICA PER PAINTING-4: Sfondo immersivo fisso
         if (widget.painting.id == 'painting-4') {
           _createImmersiveChurchBackground(anchor);
         } else {
-          // Comportamento normale per altri dipinti
           final overlay = ARService.buildOverlayNode(
             anchor: anchor,
             painting: widget.painting,
@@ -319,20 +367,17 @@ class _ARViewScreenState extends State<ARViewScreen> {
     }
   }
 
-  // METODO: Crea sfondo chiesa immersivo fisso
   void _createImmersiveChurchBackground(ARKitImageAnchor anchor) {
     debugPrint('Creazione sfondo chiesa immersivo...');
 
-    // Ottieni la posizione iniziale del marker
     final anchorTransform = anchor.transform;
     final anchorX = anchorTransform.getColumn(3).x;
     final anchorY = anchorTransform.getColumn(3).y;
     final anchorZ = anchorTransform.getColumn(3).z;
 
-    // SFONDO FISSO: Pannello gigante con la chiesa
     final backgroundGeometry = ARKitPlane(
-      width: 4.0,  // 4 metri di larghezza
-      height: 6.0, // 6 metri di altezza
+      width: 4.0,
+      height: 6.0,
     );
 
     final backgroundMaterial = ARKitMaterial(
@@ -341,38 +386,29 @@ class _ARViewScreenState extends State<ARViewScreen> {
       doubleSided: true,
     );
 
-    // Crea il nodo dello sfondo
     final backgroundNode = ARKitNode(
       name: 'churchBackground',
       geometry: backgroundGeometry,
       position: vector.Vector3(
-        anchorX,      // Stessa X del marker
-        anchorY + 0.5, // Leggermente più in alto
-        anchorZ - 1.5, // 1.5 metri davanti (verso l'utente)
+        anchorX,
+        anchorY + 0.5,
+        anchorZ - 1.5,
       ),
     );
 
-    // Applica il materiale
     backgroundNode.geometry?.materials.value = [backgroundMaterial];
-
-    // IMPORTANTE: Aggiungi direttamente alla scena root (NON come figlio dell'anchor!)
     arkitController!.add(backgroundNode);
 
     debugPrint('Sfondo chiesa creato e SGANCIATO dal marker');
-    debugPrint('Posizione fissa in coordinate world');
-    debugPrint('Dimensioni: 4m x 6m');
 
-    // Ora aggiungi il dipinto nel riquadro nero
     _addPaintingInChurch(anchor, anchorX, anchorY, anchorZ);
   }
 
-  // METODO: Posiziona il dipinto nel riquadro della chiesa
   void _addPaintingInChurch(ARKitImageAnchor anchor, double anchorX, double anchorY, double anchorZ) {
     debugPrint('Aggiunta dipinto nel riquadro chiesa...');
 
-    // Dimensioni del dipinto - più grande per coprire tutta l'area trasparente
-    final paintingWidth = 1.0;   // Aumentato per larghezza
-    final paintingHeight = 1.7;  // Aumentato per altezza
+    final paintingWidth = 1.0;
+    final paintingHeight = 1.7;
 
     final paintingGeometry = ARKitPlane(
       width: paintingWidth,
@@ -388,19 +424,15 @@ class _ARViewScreenState extends State<ARViewScreen> {
       name: 'paintingInChurch',
       geometry: paintingGeometry,
       position: vector.Vector3(
-        anchorX,        // Stessa X
-        anchorY - 1.0,  // MOLTO PIÙ IN BASSO per coprire area trasparente
-        anchorZ - 1.49, // Leggermente davanti alla chiesa (evita z-fighting)
+        anchorX,
+        anchorY - 1.0,
+        anchorZ - 1.49,
       ),
     );
 
-    // Applica il materiale
     paintingNode.geometry?.materials.value = [paintingMaterial];
-
     arkitController!.add(paintingNode);
 
     debugPrint('Dipinto posizionato nel riquadro!');
-    debugPrint('Dimensioni: ${paintingWidth}m x ${paintingHeight}m');
-    debugPrint('Posizione Y: ${anchorY - 1.8}');
   }
 }

@@ -20,7 +20,7 @@ class HomeScreen extends StatelessWidget {
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
               title: const Text(
-                'AR Restauro',
+                'AR Museum',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
