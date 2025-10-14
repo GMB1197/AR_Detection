@@ -35,6 +35,73 @@ class PaintingsData {
       widthRatio: 1.0,
       heightRatio: 1.0,
     ),
+
+    PaintingModel(
+      id: 'painting-4',
+      title: 'Madonna della Trinità',
+      artist: 'Cimabue',
+      description: 'Maestà con angeli, appare nell\'altare della chiesa',
+      damagedImagePath: 'assets/painting-4-overlay.png',
+      restoredImagePath: 'assets/trinita_1_complete.png',
+      referenceImageName: 'painting-4',
+      widthRatio: 3.0,
+      heightRatio: 2.2,
+      offsetX: 0.0,
+      offsetY: 0.0,
+      offsetZ: 0.003,
+      // SECONDO OVERLAY: Dipinto DIETRO la chiesa
+      // secondaryOverlayPath: 'assets/painting-4-overlay.png',  // Stesso file della home
+      // secondaryWidthRatio: 0.35,   // Ridotto per entrare nel riquadro
+      // secondaryHeightRatio: 0.52,  // Proporzioni del riquadro
+      // secondaryOffsetX: 0.0,       // Centrato
+      // secondaryOffsetY: -0.42,     // Spostato più in basso nel riquadro
+      // secondaryOffsetZ: 0.002,     // Dietro la chiesa
+    ),
+
+    PaintingModel(
+      id: 'painting-5',
+      title: 'Madonna col Bambino',
+      artist: 'Filippo Lippi',
+      description: 'Scansiona per rivelare il disegno preparatorio',
+      damagedImagePath: 'assets/painting-5.png',
+      restoredImagePath: 'assets/lippi_madonna_disegno.png',
+      referenceImageName: 'painting-5',
+      widthRatio: 1.20,
+      heightRatio: 0.93,
+      offsetX: 0.0,
+      offsetY: 0.0,
+      offsetZ: 0.001,
+    ),
+
+    PaintingModel(
+      id: 'painting-6',
+      title: 'Annunciazione',
+      artist: 'Sandro Botticelli',
+      description: 'Scansiona lo spazio centrale per vedere i pannelli completi',
+      damagedImagePath: 'assets/painting-6.png',
+      restoredImagePath: 'assets/botticelli_annunciazione_over.png',
+      referenceImageName: 'painting-6',
+      widthRatio: 2.90,
+      heightRatio: 4.40,
+      offsetX: 0.0,
+      offsetY: 0.0,
+      offsetZ: 0.000,
+    ),
+
+    PaintingModel(
+      id: 'painting-7',
+      title: 'Battaglia di San Romano',
+      artist: 'Paolo Uccello',
+      description: 'Scansiona lo spazio centrale per vedere la battaglia completa',
+      damagedImagePath: 'assets/painting-7.png',
+      restoredImagePath: 'assets/sanromano_over.png',
+      referenceImageName: 'painting-7',
+      widthRatio: 2.90,
+      heightRatio: 4.10,
+      offsetX: 0.0,
+      offsetY: 0.0,
+      offsetZ: 0.000,
+    ),
   ];
 
   static PaintingModel? getPaintingById(String id) {

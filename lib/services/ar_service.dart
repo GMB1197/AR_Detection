@@ -8,8 +8,6 @@ import 'package:vector_math/vector_math_64.dart' as vector;
 import '../models/painting_model.dart';
 
 class ARService {
-  static const double planeOffset = 0.003;
-
   /// Pre-carica l'immagine restaurata nella cache temporanea
   static Future<String?> preloadImage(String assetPath) async {
     try {
@@ -29,18 +27,97 @@ class ARService {
     }
   }
 
-  /// Crea il nodo overlay AR per il quadro
+  /// Crea il nodo overlay AR per il quadro con posizionamento personalizzato
   static ARKitNode buildOverlayNode({
     required ARKitImageAnchor anchor,
     required PaintingModel painting,
     required String cachedImageUrl,
     required double transparency,
-    double zOffset = planeOffset,
   }) {
+    // Calcola le dimensioni basate sui ratio del modello
     final double w = anchor.referenceImagePhysicalSize.x * painting.widthRatio;
     final double h = anchor.referenceImagePhysicalSize.y * painting.heightRatio;
 
-    debugPrint('Overlay size (m): width=$w, height=$h (zOffset=$zOffset)');
+    debugPrint('Overlay size: width=$w m, height=$h m');
+    debugPrint('Position offset: x=${painting.offsetX}, y=${painting.offsetY}, z=${painting.offsetZ}');
+
+    final material = ARKitMaterial(
+      diffuse: ARKitMaterialProperty.image(cachedImageUrl),
+      doubleSided: true,
+      transparency: transparency,
+      lightingModelName: ARKitLightingModel.constant,
+    );
+
+    final plane = ARKitPlane(
+      width: w,
+      height: h,
+      materials: [material],
+    );
+
+    // Applica gli offset dal modello per posizionamento personalizzato
+    return ARKitNode(
+      name: 'overlayFront',
+      geometry: plane,
+      position: vector.Vector3(
+        painting.offsetX,  // Offset orizzontale
+        painting.offsetY,  // Offset verticale
+        painting.offsetZ,  // Distanza dalla superficie
+      ),
+      eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
+      renderingOrder: 2000,
+    );
+  }
+
+  /// Aggiorna la trasparenza dell'overlay esistente
+  static void updateOverlayTransparency({
+    required ARKitController controller,
+    required ARKitImageAnchor anchor,
+    required PaintingModel painting,
+    required String cachedImageUrl,
+    String? cachedSecondaryImageUrl,
+    required double transparency,
+  }) {
+    try {
+      // Rimuovi overlay principale
+      controller.remove('overlayFront');
+      final overlay = buildOverlayNode(
+        anchor: anchor,
+        painting: painting,
+        cachedImageUrl: cachedImageUrl,
+        transparency: transparency,
+      );
+      controller.add(overlay, parentNodeName: anchor.nodeName);
+
+      // Aggiorna anche il secondo overlay se presente
+      if (painting.secondaryOverlayPath != null && cachedSecondaryImageUrl != null) {
+        controller.remove('overlaySecondary');
+        final secondaryOverlay = buildSecondaryOverlayNode(
+          anchor: anchor,
+          painting: painting,
+          cachedImageUrl: cachedSecondaryImageUrl,
+          transparency: transparency,
+        );
+        controller.add(secondaryOverlay, parentNodeName: anchor.nodeName);
+      }
+
+      debugPrint('Trasparenza aggiornata: ${(transparency * 100).toInt()}%');
+    } catch (e) {
+      debugPrint('Errore aggiornamento trasparenza: $e');
+    }
+  }
+
+  /// Crea il nodo per il secondo overlay (es. dipinto dentro la chiesa)
+  static ARKitNode buildSecondaryOverlayNode({
+    required ARKitImageAnchor anchor,
+    required PaintingModel painting,
+    required String cachedImageUrl,
+    required double transparency,
+  }) {
+    final double w = anchor.referenceImagePhysicalSize.x * (painting.secondaryWidthRatio ?? 1.0);
+    final double h = anchor.referenceImagePhysicalSize.y * (painting.secondaryHeightRatio ?? 1.0);
+
+    debugPrint('Secondary overlay size: width=$w m, height=$h m');
+    debugPrint('Secondary position: x=${painting.secondaryOffsetX}, y=${painting.secondaryOffsetY}, z=${painting.secondaryOffsetZ}');
 
     final material = ARKitMaterial(
       diffuse: ARKitMaterialProperty.image(cachedImageUrl),
@@ -56,34 +133,15 @@ class ARService {
     );
 
     return ARKitNode(
-      name: 'overlayFront',
+      name: 'overlaySecondary',
       geometry: plane,
-      position: vector.Vector3(0, 0, zOffset),
+      position: vector.Vector3(
+        painting.secondaryOffsetX ?? 0.0,
+        painting.secondaryOffsetY ?? 0.0,
+        painting.secondaryOffsetZ ?? 0.002,  // DIETRO la chiesa
+      ),
       eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
-      renderingOrder: 2000,
+      renderingOrder: 1999,  // DIETRO la chiesa (che ha 2000)
     );
-  }
-
-  /// Aggiorna la trasparenza dell'overlay esistente
-  static void updateOverlayTransparency({
-    required ARKitController controller,
-    required ARKitImageAnchor anchor,
-    required PaintingModel painting,
-    required String cachedImageUrl,
-    required double transparency,
-  }) {
-    try {
-      controller.remove('overlayFront');
-      final overlay = buildOverlayNode(
-        anchor: anchor,
-        painting: painting,
-        cachedImageUrl: cachedImageUrl,
-        transparency: transparency,
-      );
-      controller.add(overlay, parentNodeName: anchor.nodeName);
-      debugPrint('Trasparenza aggiornata: ${(transparency * 100).toInt()}%');
-    } catch (e) {
-      debugPrint('Errore aggiornamento trasparenza: $e');
-    }
   }
 }

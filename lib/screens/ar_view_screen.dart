@@ -21,71 +21,76 @@ class _ARViewScreenState extends State<ARViewScreen> {
   ARKitController? arkitController;
   bool imageDetected = false;
   String? cachedImageUrl;
+  String? cachedSecondaryImageUrl;
   double transparency = 1.0;
   ARKitImageAnchor? currentAnchor;
   Timer? _debounceTimer;
+  Timer? _bannerTimer;
+  bool _showBanner = false;
   bool _isUpdatingAR = false;
 
   @override
   void initState() {
     super.initState();
-    _preloadImage();
+    _preloadImages();
   }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _bannerTimer?.cancel();
     arkitController?.dispose();
     super.dispose();
   }
 
-  Future<void> _preloadImage() async {
+  Future<void> _preloadImages() async {
     cachedImageUrl = await ARService.preloadImage(
       widget.painting.restoredImagePath,
     );
+
+    if (widget.painting.secondaryOverlayPath != null) {
+      cachedSecondaryImageUrl = await ARService.preloadImage(
+        widget.painting.secondaryOverlayPath!,
+      );
+      debugPrint('Secondo overlay precaricato: $cachedSecondaryImageUrl');
+    }
   }
 
   void _resetDetection() {
-    // Cancella il timer attivo
     _debounceTimer?.cancel();
+    _bannerTimer?.cancel();
 
-    // Rimuovi l'overlay
     try {
       arkitController?.remove('overlayFront');
+      arkitController?.remove('overlaySecondary');
     } catch (e) {
       debugPrint('Errore rimozione overlay: $e');
     }
 
-    // Reset completo dello stato
     setState(() {
       imageDetected = false;
+      _showBanner = false;
       transparency = 1.0;
       currentAnchor = null;
       _isUpdatingAR = false;
     });
 
-    // Reinizializza il listener per anchor
     if (arkitController != null) {
       arkitController!.onAddNodeForAnchor = _handleAddAnchor;
     }
 
     debugPrint('Detection resettata per: ${widget.painting.title}');
-    debugPrint('Pronto per nuovo rilevamento');
   }
 
   void _updateTransparency(double value) {
-    // Aggiorna l'UI immediatamente per fluidità
     setState(() {
       transparency = value;
     });
 
-    // Salta l'aggiornamento AR se uno è già in corso
     if (_isUpdatingAR) return;
 
-    // Cancella il timer precedente
     _debounceTimer?.cancel();
 
-    // Aggiorna l'AR con un debounce molto breve (16ms = ~60fps)
     _debounceTimer = Timer(const Duration(milliseconds: 16), () {
       if (imageDetected && currentAnchor != null && cachedImageUrl != null && arkitController != null) {
         _isUpdatingAR = true;
@@ -96,6 +101,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
             anchor: currentAnchor!,
             painting: widget.painting,
             cachedImageUrl: cachedImageUrl!,
+            cachedSecondaryImageUrl: cachedSecondaryImageUrl,
             transparency: value,
           );
         } catch (e) {
@@ -109,6 +115,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Determina se mostrare lo slider (solo per dipinti di restauro, non per 4, 6, 7)
+    final bool showSlider = !['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.painting.title),
@@ -134,9 +143,10 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
           if (!imageDetected) _buildInstructions(),
 
-          if (imageDetected) _buildDetectionBanner(),
+          if (imageDetected && _showBanner) _buildDetectionBanner(),
 
-          if (imageDetected)
+          // Mostra lo slider SOLO per dipinti di restauro (1, 2, 3, 5)
+          if (imageDetected && showSlider)
             Positioned(
               bottom: 30,
               left: 0,
@@ -152,6 +162,12 @@ class _ARViewScreenState extends State<ARViewScreen> {
   }
 
   Widget _buildInstructions() {
+    // Testo diverso per dipinti speciali (4, 6, 7)
+    final bool isSpecialEffect = ['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
+    final String instructionText = isSpecialEffect
+        ? 'Inquadra il quadro per vedere l\'effetto AR'
+        : 'Inquadra il quadro per vedere la versione restaurata';
+
     return Positioned(
       bottom: 30,
       left: 0,
@@ -175,9 +191,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Inquadra il quadro per vedere la versione restaurata',
-              style: TextStyle(
+            Text(
+              instructionText,
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
               ),
@@ -190,6 +206,12 @@ class _ARViewScreenState extends State<ARViewScreen> {
   }
 
   Widget _buildDetectionBanner() {
+    // Testo diverso per dipinti speciali (4, 6, 7) - senza slider
+    final bool showSlider = !['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
+    final String bannerSubtext = showSlider
+        ? 'Usa lo slider per confrontare'
+        : 'Effetto AR attivato!';
+
     return Positioned(
       top: 10,
       left: 0,
@@ -215,9 +237,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Usa lo slider per confrontare',
-              style: TextStyle(
+            Text(
+              bannerSubtext,
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 14,
               ),
@@ -242,7 +264,6 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
     debugPrint('Image anchor rilevato: ${anchor.referenceImageName}');
 
-    // Controlla se stiamo già tracciando un'immagine
     if (imageDetected) {
       debugPrint('Anchor già rilevato, ignoro nuovi anchor');
       return;
@@ -253,7 +274,18 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
       setState(() {
         imageDetected = true;
+        _showBanner = true;
         currentAnchor = anchor;
+      });
+
+      // Nascondi il banner dopo 2.5 secondi
+      _bannerTimer?.cancel();
+      _bannerTimer = Timer(const Duration(milliseconds: 2500), () {
+        if (mounted) {
+          setState(() {
+            _showBanner = false;
+          });
+        }
       });
 
       if (cachedImageUrl != null && arkitController != null) {
@@ -264,7 +296,18 @@ class _ARViewScreenState extends State<ARViewScreen> {
           transparency: transparency,
         );
         arkitController!.add(overlay, parentNodeName: anchor.nodeName);
-        debugPrint('Overlay aggiunto per: ${widget.painting.title}');
+        debugPrint('Overlay principale aggiunto per: ${widget.painting.title}');
+
+        if (widget.painting.secondaryOverlayPath != null && cachedSecondaryImageUrl != null) {
+          final secondaryOverlay = ARService.buildSecondaryOverlayNode(
+            anchor: anchor,
+            painting: widget.painting,
+            cachedImageUrl: cachedSecondaryImageUrl!,
+            transparency: transparency,
+          );
+          arkitController!.add(secondaryOverlay, parentNodeName: anchor.nodeName);
+          debugPrint('Overlay secondario aggiunto');
+        }
       }
     } else {
       debugPrint('Quadro diverso rilevato, ignorato');

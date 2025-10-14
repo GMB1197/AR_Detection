@@ -63,10 +63,10 @@ class TransparencySlider extends StatelessWidget {
           const SizedBox(height: 12),
           SliderTheme(
             data: SliderThemeData(
-              activeTrackColor: Colors.deepPurple,
+              activeTrackColor: Colors.white,
               inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
-              thumbColor: Colors.deepPurple,
-              overlayColor: Colors.deepPurple.withValues(alpha: 0.2),
+              thumbColor: Colors.white,
+              overlayColor: Colors.white.withValues(alpha: 0.2),
               thumbShape: const RoundSliderThumbShape(
                 enabledThumbRadius: 12,
               ),
