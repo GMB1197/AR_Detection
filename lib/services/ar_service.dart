@@ -95,8 +95,6 @@ class ARService {
         );
         controller.add(secondaryOverlay, parentNodeName: anchor.nodeName);
       }
-
-      debugPrint('Trasparenza aggiornata: ${(transparency * 100).toInt()}%');
     } catch (e) {
       debugPrint('Errore aggiornamento trasparenza: $e');
     }
