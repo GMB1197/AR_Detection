@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../data/paintings_data.dart';
 import '../widgets/painting_card.dart';
 import 'ar_view_screen.dart';
@@ -9,9 +10,10 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: CustomScrollView(
         slivers: [
-          // AppBar espandibile
+          // AppBar espandibile con logo
           SliverAppBar(
             expandedHeight: 200,
             floating: false,
@@ -19,18 +21,21 @@ class HomeScreen extends StatelessWidget {
             backgroundColor: Colors.black,
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
+              titlePadding: const EdgeInsets.only(bottom: 16),
               title: const Text(
                 'AR Museum',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
+                  letterSpacing: 2.0,
+                  fontSize: 22,
                   color: Colors.white,
                 ),
               ),
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Gradient background
+                  // Gradient background moderno
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
@@ -39,42 +44,54 @@ class HomeScreen extends StatelessWidget {
                         colors: [
                           Colors.black,
                           Color(0xFF1a1a1a),
-                          Color(0xFF2d2d2d),
+                          Color(0xFF0a0a0a),
                         ],
                       ),
                     ),
                   ),
-                  // Icon centered con bordo
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 2,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.palette,
-                        size: 60,
-                        color: Colors.white38,
+
+                  // Pattern geometrico sottile
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.03,
+                      child: CustomPaint(
+                        painter: _GeometricPatternPainter(),
                       ),
                     ),
                   ),
+
+                  // Logo grande centrato in background
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 40),
+                        SvgPicture.asset(
+                          'assets/logo_AND.svg',
+                          height: 120,
+                          width: 120,
+                          colorFilter: ColorFilter.mode(
+                            Colors.white.withValues(alpha: 0.15),
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   // Bottom gradient fade
                   Positioned(
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    height: 60,
+                    height: 80,
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withValues(alpha: 0.8),
+                            Colors.black.withValues(alpha: 0.9),
                             Colors.transparent,
                           ],
                         ),
@@ -86,30 +103,63 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // Descrizione
+          // Descrizione con design moderno
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+            child: Container(
+              margin: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.palette,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Text(
+                          'Restauri in Realtà Aumentata',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   Text(
-                    'Scegli un dipinto da restaurare',
+                    'Scegli un dipinto e inquadra la sua cartolina con la fotocamera per vedere la versione restaurata in realtà aumentata',
                     style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Colors.grey[700],
+                      height: 1.5,
+                      letterSpacing: 0.2,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Inquadra la cartolina del quadro danneggiato con la fotocamera per vedere la versione restaurata in realtà aumentata',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -117,13 +167,12 @@ class HomeScreen extends StatelessWidget {
 
           // Griglia di dipinti
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 1,
-                childAspectRatio: 1.0,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
+                childAspectRatio: 0.85,
+                mainAxisSpacing: 20,
               ),
               delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -155,4 +204,38 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+// Custom painter per il pattern geometrico di sfondo
+class _GeometricPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    const spacing = 40.0;
+
+    // Linee orizzontali
+    for (double y = 0; y < size.height; y += spacing) {
+      canvas.drawLine(
+        Offset(0, y),
+        Offset(size.width, y),
+        paint,
+      );
+    }
+
+    // Linee verticali
+    for (double x = 0; x < size.width; x += spacing) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

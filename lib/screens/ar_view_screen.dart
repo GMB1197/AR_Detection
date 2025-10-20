@@ -31,6 +31,10 @@ class _ARViewScreenState extends State<ARViewScreen> {
   bool _isARKitReady = false;
   bool _updateScheduled = false;
 
+  // Mantieni riferimenti ai nodi per aggiornamenti diretti
+  ARKitNode? _overlayNode;
+  ARKitNode? _secondaryOverlayNode;
+
   @override
   void initState() {
     super.initState();
@@ -76,6 +80,8 @@ class _ARViewScreenState extends State<ARViewScreen> {
       transparency = 1.0;
       currentAnchor = null;
       _updateScheduled = false;
+      _overlayNode = null;
+      _secondaryOverlayNode = null;
     });
 
     if (arkitController != null) {
@@ -90,36 +96,48 @@ class _ARViewScreenState extends State<ARViewScreen> {
       transparency = value;
     });
 
-    // Usa SchedulerBinding per aggiornare dopo il frame corrente
+    // Aggiorna immediatamente, senza throttling
     if (!_updateScheduled) {
       _updateScheduled = true;
       SchedulerBinding.instance.addPostFrameCallback((_) {
         _updateScheduled = false;
-        _performARUpdate();
+        _updateMaterialDirectly();
       });
     }
   }
 
-  void _performARUpdate() {
-    if (imageDetected && currentAnchor != null && cachedImageUrl != null && arkitController != null) {
-      try {
-        ARService.updateOverlayTransparency(
-          controller: arkitController!,
-          anchor: currentAnchor!,
-          painting: widget.painting,
-          cachedImageUrl: cachedImageUrl!,
-          cachedSecondaryImageUrl: cachedSecondaryImageUrl,
+  void _updateMaterialDirectly() {
+    if (!imageDetected || cachedImageUrl == null) return;
+
+    try {
+      // Aggiorna SOLO il materiale del nodo esistente (velocissimo)
+      if (_overlayNode?.geometry != null) {
+        final material = ARKitMaterial(
+          diffuse: ARKitMaterialProperty.image(cachedImageUrl!),
+          doubleSided: true,
           transparency: transparency,
+          lightingModelName: ARKitLightingModel.constant,
         );
-      } catch (e) {
-        debugPrint('Errore aggiornamento trasparenza: $e');
+        _overlayNode!.geometry!.materials.value = [material];
       }
+
+      // Aggiorna anche il secondario se esiste
+      if (_secondaryOverlayNode?.geometry != null && cachedSecondaryImageUrl != null) {
+        final secondaryMaterial = ARKitMaterial(
+          diffuse: ARKitMaterialProperty.image(cachedSecondaryImageUrl!),
+          doubleSided: true,
+          transparency: transparency,
+          lightingModelName: ARKitLightingModel.constant,
+        );
+        _secondaryOverlayNode!.geometry!.materials.value = [secondaryMaterial];
+      }
+    } catch (e) {
+      debugPrint('Errore aggiornamento materiale: $e');
     }
   }
 
   void _onSliderChangeEnd(double value) {
-    // Forza un ultimo aggiornamento quando l'utente rilascia lo slider
-    _performARUpdate();
+    // Tutto già aggiornato in tempo reale
   }
 
   @override
@@ -341,6 +359,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
         if (widget.painting.id == 'painting-4') {
           _createImmersiveChurchBackground(anchor);
         } else {
+          // Crea il nodo e SALVA il riferimento
           final overlay = ARService.buildOverlayNode(
             anchor: anchor,
             painting: widget.painting,
@@ -348,6 +367,8 @@ class _ARViewScreenState extends State<ARViewScreen> {
             transparency: transparency,
           );
           arkitController!.add(overlay, parentNodeName: anchor.nodeName);
+          _overlayNode = overlay; // SALVA riferimento!
+
           debugPrint('Overlay normale aggiunto per: ${widget.painting.title}');
         }
 
@@ -359,6 +380,8 @@ class _ARViewScreenState extends State<ARViewScreen> {
             transparency: transparency,
           );
           arkitController!.add(secondaryOverlay, parentNodeName: anchor.nodeName);
+          _secondaryOverlayNode = secondaryOverlay; // SALVA riferimento!
+
           debugPrint('Overlay secondario aggiunto');
         }
       }
