@@ -143,6 +143,8 @@ class _ARViewScreenState extends State<ARViewScreen> {
   @override
   Widget build(BuildContext context) {
     final bool showSlider = !['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
+    final orientation = MediaQuery.of(context).orientation;
+    final isLandscape = orientation == Orientation.landscape;
 
     return Scaffold(
       appBar: AppBar(
@@ -169,22 +171,43 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
           if (!_isARKitReady) _buildLoadingOverlay(),
 
-          if (!imageDetected && _isARKitReady) _buildInstructions(),
+          if (!imageDetected && _isARKitReady) _buildInstructions(isLandscape),
 
           if (imageDetected && _showBanner) _buildDetectionBanner(),
 
           if (imageDetected && showSlider)
-            Positioned(
-              bottom: 30,
-              left: 0,
-              right: 0,
-              child: TransparencySlider(
-                value: transparency,
-                onChanged: _updateTransparency,
-                onChangeEnd: _onSliderChangeEnd,
-              ),
-            ),
+            isLandscape
+                ? _buildLandscapeSlider()
+                : _buildPortraitSlider(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLandscapeSlider() {
+    return Positioned(
+      right: 0,
+      top: 0,
+      bottom: 0,
+      child: Center(
+        child: TransparencySlider(
+          value: transparency,
+          onChanged: _updateTransparency,
+          onChangeEnd: _onSliderChangeEnd,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPortraitSlider() {
+    return Positioned(
+      bottom: 20,
+      left: 0,
+      right: 0,
+      child: TransparencySlider(
+        value: transparency,
+        onChanged: _updateTransparency,
+        onChangeEnd: _onSliderChangeEnd,
       ),
     );
   }
@@ -223,19 +246,19 @@ class _ARViewScreenState extends State<ARViewScreen> {
     );
   }
 
-  Widget _buildInstructions() {
+  Widget _buildInstructions(bool isLandscape) {
     final bool isSpecialEffect = ['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
     final String instructionText = isSpecialEffect
         ? 'Inquadra il quadro per vedere l\'effetto AR'
         : 'Inquadra il quadro per vedere la versione restaurata';
 
     return Positioned(
-      bottom: 30,
+      bottom: isLandscape ? 15 : 30,
       left: 0,
-      right: 0,
+      right: isLandscape ? 80 : 0,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.symmetric(horizontal: isLandscape ? 12 : 20),
+        padding: EdgeInsets.all(isLandscape ? 12 : 16),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(12),
@@ -244,19 +267,19 @@ class _ARViewScreenState extends State<ARViewScreen> {
           children: [
             Text(
               'Punta la fotocamera sulla cartolina di\n"${widget.painting.title}"',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: isLandscape ? 13 : 16,
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: isLandscape ? 6 : 8),
             Text(
               instructionText,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white70,
-                fontSize: 12,
+                fontSize: isLandscape ? 10 : 12,
               ),
               textAlign: TextAlign.center,
             ),

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.9.2
@@ -41,6 +41,7 @@ dependencies:
   cached_network_image: ^3.3.0
   flutter_launcher_icons: ^0.14.4
   flutter_svg: ^2.2.1
+  url_launcher: ^6.3.1
 
 flutter_launcher_icons:
     android: true
@@ -76,8 +77,10 @@ flutter:
      - assets/icona-app.png
     # Dipinti 1-3: Logica Restauro (danneggiato → restaurato)
      - assets/painting-1-restored.png
+     - assets/painting-1-restored-optimized.png
      - assets/painting-2-restored.png
      - assets/painting-3-restored.png
+     - assets/painting-3-restored-optimized.jpg
 
      - assets/painting-1-damaged.png
      - assets/painting-2-damaged.png

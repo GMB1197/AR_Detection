@@ -1,0 +1,9 @@
+<plist version="1.0"><dict>
+  <key>method</key><string>app-store</string>
+  <key>teamID</key><string>98KKQPXDTR</string>
+  <key>signingStyle</key><string>manual</string>
+  <key>provisioningProfiles</key>
+  <dict>
+    <key>com.andsrl.arMuseum</key><string>AR Museum</string>
+  </dict>
+</dict></plist>
