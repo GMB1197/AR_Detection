@@ -95,6 +95,21 @@ class PaintingsData {
       offsetY: 0.0,
       offsetZ: 0.000,
     ),
+
+    PaintingModel(
+      id: 'painting-8',
+      title: 'Ritratto di Papa Leone X',
+      artist: 'Raffaello Sanzio',
+      description: 'Inquadra per scoprire la storia di questo capolavoro',
+      damagedImagePath: 'assets/painting-8.png',
+      restoredImagePath: 'assets/painting-8.png',
+      referenceImageName: 'painting-8',
+      widthRatio: 1.0,
+      heightRatio: 1.35,
+      offsetX: 0.0,
+      offsetY: 0.0,
+      offsetZ: 0.001,
+    ),
   ];
 
   static PaintingModel? getPaintingById(String id) {

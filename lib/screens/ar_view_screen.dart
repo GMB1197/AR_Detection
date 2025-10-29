@@ -30,10 +30,22 @@ class _ARViewScreenState extends State<ARViewScreen> {
   bool _showBanner = false;
   bool _isARKitReady = false;
   bool _updateScheduled = false;
+  bool _showInfo = false;
 
   // Mantieni riferimenti ai nodi per aggiornamenti diretti
   ARKitNode? _overlayNode;
   ARKitNode? _secondaryOverlayNode;
+
+  // Informazioni specifiche per painting-8
+  final String _painting8Info = '''L'opera, realizzata nel 1518, ritrae al centro Papa Leone X, al secolo Giovanni de' Medici, seduto tra i suoi cugini cardinali Giulio de' Medici (futuro Papa Clemente VII) e Luigi de' Rossi.
+
+• Il dipinto è noto per l'uso magistrale del colore, in particolare le varie sfumature di rosso, e per l'attenzione ai dettagli, come il riflesso della stanza sul pomello della sedia papale.
+
+• Il papa è raffigurato con una lente d'ingrandimento in mano, un dettaglio che allude alla sua miopia, mentre si appoggia a un libro miniato.
+
+• Il ritratto fu commissionato per essere inviato a Firenze in occasione delle nozze del nipote del papa, Lorenzo duca di Urbino, con Madeleine de La Tour d'Auvergne.
+
+• L'opera originale è conservata presso le Gallerie degli Uffizi a Firenze, ma ne esistono diverse copie, tra cui una di Andrea del Sarto esposta al Museo di Capodimonte a Napoli.''';
 
   @override
   void initState() {
@@ -77,6 +89,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
     setState(() {
       imageDetected = false;
       _showBanner = false;
+      _showInfo = false;
       transparency = 1.0;
       currentAnchor = null;
       _updateScheduled = false;
@@ -142,7 +155,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool showSlider = !['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
+    final bool showSlider = !['painting-4', 'painting-6', 'painting-7', 'painting-8'].contains(widget.painting.id);
     final orientation = MediaQuery.of(context).orientation;
     final isLandscape = orientation == Orientation.landscape;
 
@@ -152,6 +165,16 @@ class _ARViewScreenState extends State<ARViewScreen> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         actions: [
+          if (imageDetected && widget.painting.id == 'painting-8')
+            IconButton(
+              tooltip: 'Mostra/Nascondi info',
+              icon: Icon(_showInfo ? Icons.info : Icons.info_outline),
+              onPressed: () {
+                setState(() {
+                  _showInfo = !_showInfo;
+                });
+              },
+            ),
           if (imageDetected)
             IconButton(
               tooltip: 'Reset rilevamento',
@@ -175,11 +198,122 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
           if (imageDetected && _showBanner) _buildDetectionBanner(),
 
+          // Info panel per painting-8
+          if (imageDetected && _showInfo && widget.painting.id == 'painting-8')
+            _buildInfoPanel(),
+
           if (imageDetected && showSlider)
             isLandscape
                 ? _buildLandscapeSlider()
                 : _buildPortraitSlider(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInfoPanel() {
+    return Positioned(
+      top: 80,
+      left: 16,
+      right: 16,
+      bottom: 100,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.92),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.2),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 20,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.history_edu,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.painting.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.painting.artist,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () {
+                      setState(() {
+                        _showInfo = false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            // Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  _painting8Info,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    height: 1.6,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -247,10 +381,17 @@ class _ARViewScreenState extends State<ARViewScreen> {
   }
 
   Widget _buildInstructions(bool isLandscape) {
+    final bool isInfoPainting = widget.painting.id == 'painting-8';
     final bool isSpecialEffect = ['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
-    final String instructionText = isSpecialEffect
-        ? 'Inquadra il quadro per vedere l\'effetto AR'
-        : 'Inquadra il quadro per vedere la versione restaurata';
+
+    String instructionText;
+    if (isInfoPainting) {
+      instructionText = 'Inquadra il quadro per scoprire la sua storia';
+    } else if (isSpecialEffect) {
+      instructionText = 'Inquadra il quadro per vedere l\'effetto AR';
+    } else {
+      instructionText = 'Inquadra il quadro per vedere la versione restaurata';
+    }
 
     return Positioned(
       bottom: isLandscape ? 15 : 30,
@@ -290,10 +431,17 @@ class _ARViewScreenState extends State<ARViewScreen> {
   }
 
   Widget _buildDetectionBanner() {
-    final bool showSlider = !['painting-4', 'painting-6', 'painting-7'].contains(widget.painting.id);
-    final String bannerSubtext = showSlider
-        ? 'Usa lo slider per confrontare'
-        : 'Effetto AR attivato!';
+    final bool isPainting8 = widget.painting.id == 'painting-8';
+    final bool showSlider = !['painting-4', 'painting-6', 'painting-7', 'painting-8'].contains(widget.painting.id);
+
+    String bannerSubtext;
+    if (isPainting8) {
+      bannerSubtext = 'Premi l\'icona info per i dettagli';
+    } else if (showSlider) {
+      bannerSubtext = 'Usa lo slider per confrontare';
+    } else {
+      bannerSubtext = 'Effetto AR attivato!';
+    }
 
     return Positioned(
       top: 10,
@@ -367,6 +515,17 @@ class _ARViewScreenState extends State<ARViewScreen> {
         imageDetected = true;
         _showBanner = true;
         currentAnchor = anchor;
+
+        // Per painting-8, mostra automaticamente le info dopo 2 secondi
+        if (widget.painting.id == 'painting-8') {
+          Future.delayed(const Duration(milliseconds: 2000), () {
+            if (mounted && imageDetected) {
+              setState(() {
+                _showInfo = true;
+              });
+            }
+          });
+        }
       });
 
       _bannerTimer?.cancel();
@@ -381,6 +540,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
       if (cachedImageUrl != null && arkitController != null) {
         if (widget.painting.id == 'painting-4') {
           _createImmersiveChurchBackground(anchor);
+        } else if (widget.painting.id == 'painting-8') {
+          // Per painting-8 non mostriamo overlay, solo le info
+          debugPrint('Painting-8 rilevato - modalità solo info');
         } else {
           // Crea il nodo e SALVA il riferimento
           final overlay = ARService.buildOverlayNode(
