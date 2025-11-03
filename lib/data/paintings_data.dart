@@ -35,7 +35,6 @@ class PaintingsData {
       widthRatio: 1.0,
       heightRatio: 1.0,
     ),
-
     PaintingModel(
       id: 'painting-4',
       title: 'Madonna della Trinità',
@@ -50,7 +49,6 @@ class PaintingsData {
       offsetY: 0.0,
       offsetZ: 0.000,
     ),
-
     PaintingModel(
       id: 'painting-5',
       title: 'Madonna col Bambino',
@@ -65,7 +63,6 @@ class PaintingsData {
       offsetY: 0.0,
       offsetZ: 0.001,
     ),
-
     PaintingModel(
       id: 'painting-6',
       title: 'Annunciazione',
@@ -80,7 +77,6 @@ class PaintingsData {
       offsetY: 0.0,
       offsetZ: 0.000,
     ),
-
     PaintingModel(
       id: 'painting-7',
       title: 'Battaglia di San Romano',
@@ -95,7 +91,6 @@ class PaintingsData {
       offsetY: 0.0,
       offsetZ: 0.000,
     ),
-
     PaintingModel(
       id: 'painting-8',
       title: 'Ritratto di Papa Leone X',
@@ -109,6 +104,46 @@ class PaintingsData {
       offsetX: 0.0,
       offsetY: 0.0,
       offsetZ: 0.001,
+    ),
+
+    PaintingModel(
+      id: 'painting-9',
+      title: 'L\'Annunciazione',
+      artist: 'Leonardo da Vinci',
+      description: 'Tocca gli stencil per scoprire i disegni preparatori',
+      damagedImagePath: 'assets/painting-9.png',
+      restoredImagePath: 'assets/leonardo_annunciazione_restored.png',
+      referenceImageName: 'painting-9',
+      widthRatio: 0.80,
+      heightRatio: 1.00,
+      offsetX: 0.0,
+      offsetY: 0.0,
+      offsetZ: 0.001,
+
+      // Configurazione hotspot interattivi (stencil cliccabili)
+      hasInteractiveHotspots: true,
+
+      hotspots: [
+        {
+          'id': 0,
+          'x': -0.28,  // Sinistra - disegno Angelo
+          'y': 0.02,   // Leggermente sopra il centro
+          'title': 'Studio preparatorio dell\'Angelo',
+          'description': 'Studi approfonditi delle pieghe del vestito dell\'angelo. Leonardo applicava tecniche di chiaroscuro per rendere il tessuto realistico. Ogni piega era attentamente pianificata per creare un senso di movimento e naturalezza.',
+        },
+        {
+          'id': 1,
+          'x': 0.22,   // Destra - disegno Madonna
+          'y': 0.02,   // Stessa altezza
+          'title': 'Studio preparatorio della Madonna',
+          'description': 'Disegni preparatori della figura della Madonna. Leonardo studiò attentamente la postura, l\'espressione e il panneggio del mantello. I suoi disegni rivelano l\'attenzione ai dettagli anatomici e alla composizione armoniosa della scena.',
+        },
+      ],
+
+      detailImagePaths: [
+        'assets/leonardo_detail_horse_overlay.png',    // hotspot 0 (Angelo)
+        'assets/leonardo_detail_drapery_overlay.png',  // hotspot 1 (Maonna)
+      ],
     ),
   ];
 

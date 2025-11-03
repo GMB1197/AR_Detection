@@ -48,6 +48,16 @@ class PaintingModel {
   final double? secondaryOffsetY;
   final double? secondaryOffsetZ;
 
+  // ⭐ NUOVI CAMPI per painting-9 (hotspot interattivi)
+  /// Se true, attiva hotspot interattivi invece dello slider
+  final bool? hasInteractiveHotspots;
+
+  /// Lista di hotspot con posizioni e descrizioni
+  final List<Map<String, dynamic>>? hotspots;
+
+  /// Percorsi delle immagini di dettaglio per gli hotspot
+  final List<String>? detailImagePaths;
+
   const PaintingModel({
     required this.id,
     required this.title,
@@ -67,6 +77,10 @@ class PaintingModel {
     this.secondaryOffsetX,
     this.secondaryOffsetY,
     this.secondaryOffsetZ,
+    // Nuovi parametri opzionali
+    this.hasInteractiveHotspots,
+    this.hotspots,
+    this.detailImagePaths,
   });
 
   /// Converte il modello in JSON
@@ -90,6 +104,9 @@ class PaintingModel {
       'secondaryOffsetX': secondaryOffsetX,
       'secondaryOffsetY': secondaryOffsetY,
       'secondaryOffsetZ': secondaryOffsetZ,
+      'hasInteractiveHotspots': hasInteractiveHotspots,
+      'hotspots': hotspots,
+      'detailImagePaths': detailImagePaths,
     };
   }
 
@@ -114,6 +131,9 @@ class PaintingModel {
       secondaryOffsetX: (json['secondaryOffsetX'] as num?)?.toDouble(),
       secondaryOffsetY: (json['secondaryOffsetY'] as num?)?.toDouble(),
       secondaryOffsetZ: (json['secondaryOffsetZ'] as num?)?.toDouble(),
+      hasInteractiveHotspots: json['hasInteractiveHotspots'] as bool?,
+      hotspots: (json['hotspots'] as List?)?.cast<Map<String, dynamic>>(),
+      detailImagePaths: (json['detailImagePaths'] as List?)?.cast<String>(),
     );
   }
 
@@ -137,6 +157,9 @@ class PaintingModel {
     double? secondaryOffsetX,
     double? secondaryOffsetY,
     double? secondaryOffsetZ,
+    bool? hasInteractiveHotspots,
+    List<Map<String, dynamic>>? hotspots,
+    List<String>? detailImagePaths,
   }) {
     return PaintingModel(
       id: id ?? this.id,
@@ -157,6 +180,9 @@ class PaintingModel {
       secondaryOffsetX: secondaryOffsetX ?? this.secondaryOffsetX,
       secondaryOffsetY: secondaryOffsetY ?? this.secondaryOffsetY,
       secondaryOffsetZ: secondaryOffsetZ ?? this.secondaryOffsetZ,
+      hasInteractiveHotspots: hasInteractiveHotspots ?? this.hasInteractiveHotspots,
+      hotspots: hotspots ?? this.hotspots,
+      detailImagePaths: detailImagePaths ?? this.detailImagePaths,
     );
   }
 

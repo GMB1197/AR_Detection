@@ -107,9 +107,9 @@ flutter:
 
     # PAINTING-9: Annunciazione Leonardo → Disegni preparatori
      - assets/painting-9.png              # Annunciazione completa per UI e rilevamento
-     - assets/leonardo_annunciazione_stencil.png  # Disegni preparatori (overlay AR)
-     - assets/leonardo_detail_horse.png
-     - assets/leonardo_detail_drapery.png
+     - assets/leonardo_annunciazione_restored.png  # Disegni preparatori (overlay AR)
+     - assets/leonardo_detail_horse_overlay.png
+     - assets/leonardo_detail_drapery_overlay.png
 
      - assets/painting-10.png
   # An image asset can refer to one or more resolution-specific "variants", see
