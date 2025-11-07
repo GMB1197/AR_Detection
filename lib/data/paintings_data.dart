@@ -1,7 +1,7 @@
 import '../models/painting_model.dart';
 
 class PaintingsData {
-  static const List<PaintingModel> paintings = [
+  static final List<PaintingModel> paintings = [
     PaintingModel(
       id: 'painting-1',
       title: 'Adorazione dei Pastori',
@@ -106,61 +106,60 @@ class PaintingsData {
       offsetZ: 0.001,
     ),
 
+    // ⭐ Iconografia con stencil cliccabili
     PaintingModel(
       id: 'painting-9',
       title: 'L\'Annunciazione',
       artist: 'Leonardo da Vinci',
       description: 'Tocca gli stencil per scoprire i disegni preparatori',
       damagedImagePath: 'assets/painting-9.png',
-      restoredImagePath: 'assets/leonardo_annunciazione_restored.png',
+      restoredImagePath: 'assets/leonardo_annunciazione_stencil.png',
       referenceImageName: 'painting-9',
+      // Per allineamento perfetto al marker: tieni 1:1
       widthRatio: 0.80,
       heightRatio: 1.00,
       offsetX: 0.0,
       offsetY: 0.0,
-      offsetZ: 0.001,
+      offsetZ: 0.0,
 
-      // Configurazione hotspot interattivi (stencil cliccabili)
       hasInteractiveHotspots: true,
-
       hotspots: [
         {
           'id': 0,
-          'x': -0.28,  // Sinistra - disegno Angelo
-          'y': 0.02,   // Leggermente sopra il centro
+          'x': -0.25, // ⭐ Angelo/cavallo - sinistra (25% a sx del centro)
+          'y': 0.15,  // ⭐ Alto (15% sopra il centro)
           'title': 'Studio preparatorio dell\'Angelo',
-          'description': 'Studi approfonditi delle pieghe del vestito dell\'angelo. Leonardo applicava tecniche di chiaroscuro per rendere il tessuto realistico. Ogni piega era attentamente pianificata per creare un senso di movimento e naturalezza.',
+          'description':
+          'Studi approfonditi delle pieghe del vestito dell\'angelo. Leonardo applicava tecniche di chiaroscuro per rendere il tessuto realistico. Ogni piega era attentamente pianificata per creare un senso di movimento e naturalezza.',
         },
         {
           'id': 1,
-          'x': 0.22,   // Destra - disegno Madonna
-          'y': 0.02,   // Stessa altezza
+          'x': 0.20,   // ⭐ Madonna/panneggio - destra (20% a dx del centro)
+          'y': 0.15,   // ⭐ Alto (15% sopra il centro) - stessa altezza dell'angelo
           'title': 'Studio preparatorio della Madonna',
-          'description': 'Disegni preparatori della figura della Madonna. Leonardo studiò attentamente la postura, l\'espressione e il panneggio del mantello. I suoi disegni rivelano l\'attenzione ai dettagli anatomici e alla composizione armoniosa della scena.',
+          'description':
+          'Disegni preparatori della figura della Madonna. Leonardo studiò attentamente la postura, l\'espressione e il panneggio del mantello. I suoi disegni rivelano l\'attenzione ai dettagli anatomici e alla composizione armoniosa della scena.',
         },
       ],
-
       detailImagePaths: [
-        'assets/leonardo_detail_horse_overlay.png',    // hotspot 0 (Angelo)
-        'assets/leonardo_detail_drapery_overlay.png',  // hotspot 1 (Maonna)
+        'assets/leonardo_detail_horse_overlay.png',   // 0 (Angelo)
+        'assets/leonardo_detail_drapery_overlay.png', // 1 (Madonna)
       ],
     ),
   ];
 
   static PaintingModel? getPaintingById(String id) {
     try {
-      return paintings.firstWhere((painting) => painting.id == id);
-    } catch (e) {
+      return paintings.firstWhere((p) => p.id == id);
+    } catch (_) {
       return null;
     }
   }
 
   static PaintingModel? getPaintingByReferenceName(String referenceName) {
     try {
-      return paintings.firstWhere(
-            (painting) => painting.referenceImageName == referenceName,
-      );
-    } catch (e) {
+      return paintings.firstWhere((p) => p.referenceImageName == referenceName);
+    } catch (_) {
       return null;
     }
   }

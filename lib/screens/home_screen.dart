@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../data/paintings_data.dart';
+
+import '../data/paintings_data.dart' as data;
 import '../widgets/painting_card.dart';
-import 'ar_view_screen.dart';
+import 'ar_view_screen.dart' as views;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -43,7 +44,7 @@ class HomeScreen extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Gradient background moderno
+                  // Gradient background
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
@@ -57,8 +58,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  // Pattern geometrico sottile
+                  // Pattern
                   Positioned.fill(
                     child: Opacity(
                       opacity: 0.03,
@@ -67,8 +67,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  // Logo grande centrato in background
+                  // Logo
                   Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -86,8 +85,7 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // Bottom gradient fade
+                  // Fade bottom
                   Positioned(
                     bottom: 0,
                     left: 0,
@@ -111,7 +109,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // Descrizione con design moderno
+          // Descrizione
           SliverToBoxAdapter(
             child: Container(
               margin: const EdgeInsets.all(20),
@@ -173,7 +171,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // Card con link alla documentazione
+          // Card link doc
           SliverToBoxAdapter(
             child: Container(
               margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -266,14 +264,14 @@ class HomeScreen extends StatelessWidget {
               ),
               delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                  final painting = PaintingsData.paintings[index];
+                  final painting = data.PaintingsData.paintings[index];
                   return PaintingCard(
                     painting: painting,
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ARViewScreen(
+                          builder: (context) => views.ARViewScreen(
                             painting: painting,
                           ),
                         ),
@@ -281,22 +279,19 @@ class HomeScreen extends StatelessWidget {
                     },
                   );
                 },
-                childCount: PaintingsData.paintings.length,
+                childCount: data.PaintingsData.paintings.length,
               ),
             ),
           ),
 
-          // Spazio finale
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 50),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 50)),
         ],
       ),
     );
   }
 }
 
-// Custom painter per il pattern geometrico di sfondo
+// Pattern geometrico
 class _GeometricPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -307,22 +302,11 @@ class _GeometricPatternPainter extends CustomPainter {
 
     const spacing = 40.0;
 
-    // Linee orizzontali
     for (double y = 0; y < size.height; y += spacing) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        paint,
-      );
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
-
-    // Linee verticali
     for (double x = 0; x < size.width; x += spacing) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        paint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
   }
 
