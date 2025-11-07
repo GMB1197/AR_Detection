@@ -442,7 +442,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
     // Tap gestito su immagini e hit-area invisibili
     arkitController!.onNodeTap = (List<String> nodes) {
-      debugPrint('🔍 Tap: $nodes');
+      debugPrint('Tap: $nodes');
       for (final n in nodes) {
         final m1 = RegExp(r'detail_image_(\d+)').firstMatch(n);
         final m2 = RegExp(r'hit_area_(\d+)').firstMatch(n);
@@ -450,11 +450,11 @@ class _ARViewScreenState extends State<ARViewScreen> {
         if (m != null) {
           final idx = int.parse(m.group(1)!);
           setState(() => _selectedHotspot = idx);
-          debugPrint('✅ Open detail index=$idx (node=$n)');
+          debugPrint('Open detail index=$idx (node=$n)');
           return;
         }
       }
-      debugPrint('⚠️ No hotspot recognized: $nodes');
+      debugPrint('No hotspot recognized: $nodes');
     };
 
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -523,9 +523,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
     }
   }
 
-  // ⭐ painting-9 — overlay + hotspot (mini-immagine + hit-area invisibile)
+  // painting-9 — overlay + hotspot (mini-immagine + hit-area invisibile)
   void _createIconographyOverlays(ARKitImageAnchor anchor) {
-    debugPrint('🎨 Iconography: overlay + clickable hotspots (no rings)');
+    debugPrint('Iconography: overlay + clickable hotspots (no rings)');
 
     final w  = anchor.referenceImagePhysicalSize.x * widget.painting.widthRatio;
     final h  = anchor.referenceImagePhysicalSize.y * widget.painting.heightRatio;
@@ -577,18 +577,36 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
     for (int i = 0; i < widget.painting.hotspots!.length; i++) {
       final hs = widget.painting.hotspots![i];
-      final dx = (hs['x'] as num?)?.toDouble() ?? 0.0; // percent of width (-0.5..0.5 etc.)
+      final dx = (hs['x'] as num?)?.toDouble() ?? 0.0; // percent of width
       final dy = (hs['y'] as num?)?.toDouble() ?? 0.0; // percent of height
       const double epsilon = 0.0002;
 
-      // mapping: X = ox + dx*w, Z = oz + (-dy*h), Y = oy + epsilon (piano)
+      // Posizione complanare allo stencil
       final localX = ox + (dx * w);
       final localY = oy + epsilon;
       final localZ = oz + (-dy * h);
 
-      final size = math.min(w, h) * 0.22; // lato immagine
-      if (i < _cachedDetailImages!.length) {
-        final plane = ARKitPlane(width: size, height: size);
+      // === NUOVO: larghezze/ALTEZZE per-hotspot ===
+      // 1) per-hotspot: wPct/hPct (percentuali di w/h)
+      final wPct = (hs['wPct'] as num?)?.toDouble();
+      final hPct = (hs['hPct'] as num?)?.toDouble();
+
+      // 2) fallback: sizePct su min(w,h) se non sono specificati wPct/hPct
+      final sizePct = (hs['sizePct'] as num?)?.toDouble() ?? 0.22;
+
+      late double planeW, planeH;
+      if (wPct != null || hPct != null) {
+        planeW = (wPct ?? sizePct) * w;          // se manca wPct, usa sizePct
+        planeH = (hPct ?? (wPct ?? sizePct)) * h; // se manca hPct, usa wPct→sizePct
+      } else {
+        final side = math.min(w, h) * sizePct;    // quadrato
+        planeW = side;
+        planeH = side;
+      }
+
+      // --- Immagine di dettaglio ---
+      if (_cachedDetailImages != null && i < _cachedDetailImages!.length) {
+        final plane = ARKitPlane(width: planeW, height: planeH);
         plane.materials.value = [
           ARKitMaterial(
             diffuse: ARKitMaterialProperty.image(_cachedDetailImages![i]),
@@ -605,12 +623,12 @@ class _ARViewScreenState extends State<ARViewScreen> {
           renderingOrder: 2050,
         );
         arkitController!.add(node, parentNodeName: anchor.nodeName);
-        debugPrint('✅ Added detail image $i @ local($localX,$localY,$localZ)');
       }
 
-      // hit area invisibile (un filo di alpha per essere hittabile)
-      final hitSize = size * 1.35;
-      final hitPlane = ARKitPlane(width: hitSize, height: hitSize);
+      // --- Hit area invisibile (un filo di alpha) ---
+      final hitW = planeW * 1.25;
+      final hitH = planeH * 1.25;
+      final hitPlane = ARKitPlane(width: hitW, height: hitH);
       hitPlane.materials.value = [
         ARKitMaterial(
           diffuse: ARKitMaterialProperty.color(Colors.white.withValues(alpha: 0.01)),
@@ -622,14 +640,14 @@ class _ARViewScreenState extends State<ARViewScreen> {
       final hitNode = ARKitNode(
         name: 'hit_area_$i',
         geometry: hitPlane,
-        position: vector.Vector3(localX, localY, localZ + 0.002), // davanti al dettaglio
+        position: vector.Vector3(localX, localY, localZ + 0.002), // davanti
         eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
         renderingOrder: 2060,
       );
       arkitController!.add(hitNode, parentNodeName: anchor.nodeName);
     }
 
-    debugPrint('🎨 Overlay + ${widget.painting.hotspots!.length} HOTSPOTS creati');
+    debugPrint('Overlay + ${widget.painting.hotspots!.length} HOTSPOTS creati');
   }
 
   // ————— Church effect (altri dipinti) —————

@@ -106,7 +106,7 @@ class PaintingsData {
       offsetZ: 0.001,
     ),
 
-    // ⭐ Iconografia con stencil cliccabili
+    // Iconografia con stencil cliccabili
     PaintingModel(
       id: 'painting-9',
       title: 'L\'Annunciazione',
@@ -126,16 +126,20 @@ class PaintingsData {
       hotspots: [
         {
           'id': 0,
-          'x': -0.25, // ⭐ Angelo/cavallo - sinistra (25% a sx del centro)
-          'y': 0.15,  // ⭐ Alto (15% sopra il centro)
+          'x': -0.25, // Sposta in orizzontale
+          'y': 0.0,  // Sposta in verticale
+          'wPct': 0.15,  // Larghezza
+          'hPct': 0.15,  // Altezza
           'title': 'Studio preparatorio dell\'Angelo',
           'description':
           'Studi approfonditi delle pieghe del vestito dell\'angelo. Leonardo applicava tecniche di chiaroscuro per rendere il tessuto realistico. Ogni piega era attentamente pianificata per creare un senso di movimento e naturalezza.',
         },
         {
           'id': 1,
-          'x': 0.20,   // ⭐ Madonna/panneggio - destra (20% a dx del centro)
-          'y': 0.15,   // ⭐ Alto (15% sopra il centro) - stessa altezza dell'angelo
+          'x': 0.25,   // Sposta in orizzontale
+          'y': -0.08,   // Sposta in verticale
+          'wPct': 0.20,  // Larghezza
+          'hPct': 0.25,  // Altezza
           'title': 'Studio preparatorio della Madonna',
           'description':
           'Disegni preparatori della figura della Madonna. Leonardo studiò attentamente la postura, l\'espressione e il panneggio del mantello. I suoi disegni rivelano l\'attenzione ai dettagli anatomici e alla composizione armoniosa della scena.',
