@@ -116,7 +116,7 @@ class PaintingsData {
       restoredImagePath: 'assets/leonardo_annunciazione_stencil.png',
       referenceImageName: 'painting-9',
       // Per allineamento perfetto al marker: tieni 1:1
-      widthRatio: 0.80,
+      widthRatio: 1.00,
       heightRatio: 1.00,
       offsetX: 0.0,
       offsetY: 0.0,
@@ -126,9 +126,9 @@ class PaintingsData {
       hotspots: [
         {
           'id': 0,
-          'x': -0.25, // Sposta in orizzontale
-          'y': 0.0,  // Sposta in verticale
-          'wPct': 0.15,  // Larghezza
+          'x': -0.20, // Sposta in orizzontale
+          'y': 0.01,  // Sposta in verticale
+          'wPct': 0.12,  // Larghezza
           'hPct': 0.15,  // Altezza
           'title': 'Studio preparatorio dell\'Angelo',
           'description':
@@ -136,9 +136,9 @@ class PaintingsData {
         },
         {
           'id': 1,
-          'x': 0.25,   // Sposta in orizzontale
-          'y': -0.08,   // Sposta in verticale
-          'wPct': 0.20,  // Larghezza
+          'x': 0.20,   // Sposta in orizzontale
+          'y': -0.10,   // Sposta in verticale
+          'wPct': 0.16,  // Larghezza
           'hPct': 0.25,  // Altezza
           'title': 'Studio preparatorio della Madonna',
           'description':

@@ -25,7 +25,7 @@ class ARViewScreen extends StatefulWidget {
 class _ARViewScreenState extends State<ARViewScreen> {
   ARKitController? arkitController;
   bool imageDetected = false;
-  String? cachedImageUrl;            // per painting-9 = stencil
+  String? cachedImageUrl;            // per painting-9 = (non usato come overlay)
   String? cachedSecondaryImageUrl;
   double transparency = 1.0;
   ARKitImageAnchor? currentAnchor;
@@ -35,11 +35,18 @@ class _ARViewScreenState extends State<ARViewScreen> {
   bool _updateScheduled = false;
   bool _showInfo = false;
 
-  ARKitNode? _overlayNode;          // overlay/stencil
+  // Hint "tocca gli stencil"
+  bool _showHotspotHint = false;
+  Timer? _hintTimer;
+
+  ARKitNode? _overlayNode;          // overlay/stencil (altri dipinti)
   ARKitNode? _secondaryOverlayNode; // overlay secondario (altri dipinti)
 
   int? _selectedHotspot;
   List<String>? _cachedDetailImages;
+
+  // Opacità del velo bianco (0=trasparente, 1=opaco)
+  final double _whiteVeilAlpha = 0.45;
 
   final String _painting8Info = """L'opera, realizzata nel 1518, ritrae al centro Papa Leone X, al secolo Giovanni de' Medici, seduto tra i suoi cugini cardinali Giulio de' Medici (futuro Papa Clemente VII) e Luigi de' Rossi.
 
@@ -57,12 +64,13 @@ class _ARViewScreenState extends State<ARViewScreen> {
   @override
   void dispose() {
     _bannerTimer?.cancel();
+    _hintTimer?.cancel();
     arkitController?.dispose();
     super.dispose();
   }
 
   Future<void> _preloadImages() async {
-    // Per painting-9: questa è l'immagine "stencil"
+    // Carico comunque (potrebbe servire altrove)
     cachedImageUrl = await ARService.preloadImage(widget.painting.restoredImagePath);
 
     if (widget.painting.secondaryOverlayPath != null) {
@@ -98,10 +106,13 @@ class _ARViewScreenState extends State<ARViewScreen> {
       }
     } catch (_) {}
 
+    _hintTimer?.cancel();
+
     setState(() {
       imageDetected = false;
       _showBanner = false;
       _showInfo = false;
+      _showHotspotHint = false;
       transparency = 1.0;
       currentAnchor = null;
       _overlayNode = null;
@@ -126,9 +137,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
   }
 
   void _updateMaterialDirectly() {
-    if (!imageDetected || cachedImageUrl == null) return;
+    if (!imageDetected) return;
     try {
-      if (_overlayNode?.geometry != null) {
+      if (_overlayNode?.geometry != null && cachedImageUrl != null) {
         _overlayNode!.geometry!.materials.value = [
           ARKitMaterial(
             diffuse: ARKitMaterialProperty.image(cachedImageUrl!),
@@ -202,7 +213,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
           ARKitSceneView(
             detectionImagesGroupName: 'AR Resources',
             maximumNumberOfTrackedImages: 1,
-            enableTapRecognizer: true, // ⬅️ necessario per i tap
+            enableTapRecognizer: true, // necessario per i tap
             onARKitViewCreated: _onARKitViewCreated,
           ),
 
@@ -210,6 +221,13 @@ class _ARViewScreenState extends State<ARViewScreen> {
           if (!imageDetected && _isARKitReady) _buildInstructions(isLandscape, instructionText),
           if (imageDetected && _showBanner) _buildDetectionBanner(),
           if (imageDetected && _showInfo && widget.painting.id == 'painting-8') _buildInfoPanel(),
+
+          // Hint in basso (solo painting-9, nessun dettaglio aperto)
+          if (imageDetected &&
+              widget.painting.id == 'painting-9' &&
+              _selectedHotspot == null &&
+              _showHotspotHint)
+            _buildBottomHotspotHint(isLandscape),
 
           if (_selectedHotspot != null) _buildHotspotDetailView(),
 
@@ -237,6 +255,44 @@ class _ARViewScreenState extends State<ARViewScreen> {
       value: transparency,
       onChanged: _updateTransparency,
       onChangeEnd: _onSliderChangeEnd,
+    ),
+  );
+
+  // HINT in basso, non intercetta i tap (IgnorePointer), responsivo
+  Widget _buildBottomHotspotHint(bool isLandscape) => Positioned(
+    left: isLandscape ? 12 : 16,
+    right: isLandscape ? 12 : 16,
+    bottom: isLandscape ? 8 : 16,
+    child: IgnorePointer(
+      child: SafeArea(
+        top: false,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.55),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.touch_app, size: 18, color: Colors.white),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'Tocca gli stencil per vederli in dettaglio',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isLandscape ? 12 : 13.5,
+                    height: 1.2,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     ),
   );
 
@@ -449,7 +505,10 @@ class _ARViewScreenState extends State<ARViewScreen> {
         final m = m1 ?? m2;
         if (m != null) {
           final idx = int.parse(m.group(1)!);
-          setState(() => _selectedHotspot = idx);
+          setState(() {
+            _selectedHotspot = idx;
+            _showHotspotHint = false; // nascondi hint quando entro nel dettaglio
+          });
           debugPrint('Open detail index=$idx (node=$n)');
           return;
         }
@@ -489,14 +548,23 @@ class _ARViewScreenState extends State<ARViewScreen> {
         if (mounted) setState(() => _showBanner = false);
       });
 
-      if (cachedImageUrl != null && arkitController != null) {
+      // Attiva hint per painting-9 e auto-hide dopo 6s
+      if (widget.painting.id == 'painting-9') {
+        setState(() => _showHotspotHint = true);
+        _hintTimer?.cancel();
+        _hintTimer = Timer(const Duration(seconds: 6), () {
+          if (mounted) setState(() => _showHotspotHint = false);
+        });
+      }
+
+      if (arkitController != null) {
         if (widget.painting.id == 'painting-4') {
           _createImmersiveChurchBackground(anchor);
         } else if (widget.painting.id == 'painting-8') {
           debugPrint('Painting-8 detected - info only');
         } else if (widget.painting.id == 'painting-9') {
-          _createIconographyOverlays(anchor); // ⭐
-        } else {
+          _createIconographyOverlays(anchor); // ⭐ velo bianco + hotspot
+        } else if (cachedImageUrl != null) {
           final overlay = ARService.buildOverlayNode(
             anchor: anchor,
             painting: widget.painting,
@@ -523,9 +591,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
     }
   }
 
-  // painting-9 — overlay + hotspot (mini-immagine + hit-area invisibile)
+  // painting-9 — SOLO velo bianco + hotspot (mini-immagine + hit-area invisibile)
   void _createIconographyOverlays(ARKitImageAnchor anchor) {
-    debugPrint('Iconography: overlay + clickable hotspots (no rings)');
+    debugPrint('Iconography: SOLO HOTSPOTS (stencil nascosto, velo bianco)');
 
     final w  = anchor.referenceImagePhysicalSize.x * widget.painting.widthRatio;
     final h  = anchor.referenceImagePhysicalSize.y * widget.painting.heightRatio;
@@ -533,12 +601,12 @@ class _ARViewScreenState extends State<ARViewScreen> {
     final oy = widget.painting.offsetY;
     final oz = widget.painting.offsetZ;
 
-    // 1) sfondo attenuato (opzionale: commenta se non serve)
+    // 1) VELO BIANCO (senza stencil)
     final bg = ARKitPlane(width: w, height: h);
     bg.materials.value = [
       ARKitMaterial(
-        diffuse: ARKitMaterialProperty.image(widget.painting.damagedImagePath),
-        transparency: 0.15,
+        diffuse: ARKitMaterialProperty.color(Colors.white),
+        transparency: _whiteVeilAlpha, // ← opacità velo bianco
         doubleSided: true,
         lightingModelName: ARKitLightingModel.constant,
       ),
@@ -551,28 +619,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
     );
     arkitController!.add(bgNode, parentNodeName: anchor.nodeName);
 
-    // 2) overlay stencil (complanare)
-    if (cachedImageUrl != null) {
-      final overlayPlane = ARKitPlane(width: w, height: h);
-      overlayPlane.materials.value = [
-        ARKitMaterial(
-          diffuse: ARKitMaterialProperty.image(cachedImageUrl!),
-          transparency: 1.0,
-          doubleSided: true,
-          lightingModelName: ARKitLightingModel.constant,
-        ),
-      ];
-      final overlayNode = ARKitNode(
-        name: 'overlayStencils',
-        geometry: overlayPlane,
-        position: vector.Vector3(ox, oy, oz + 0.0001),
-        eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
-      );
-      arkitController!.add(overlayNode, parentNodeName: anchor.nodeName);
-      _overlayNode = overlayNode;
-    }
+    // 2) NIENTE overlay stencil
 
-    // 3) hotspot = mini-immagine + hit-area invisibile
+    // 3) HOTSPOT = mini-immagine + hit-area invisibile
     if (widget.painting.hotspots == null || _cachedDetailImages == null) return;
 
     for (int i = 0; i < widget.painting.hotspots!.length; i++) {
@@ -581,30 +630,27 @@ class _ARViewScreenState extends State<ARViewScreen> {
       final dy = (hs['y'] as num?)?.toDouble() ?? 0.0; // percent of height
       const double epsilon = 0.0002;
 
-      // Posizione complanare allo stencil
+      // Posizione complanare al velo
       final localX = ox + (dx * w);
       final localY = oy + epsilon;
       final localZ = oz + (-dy * h);
 
-      // === NUOVO: larghezze/ALTEZZE per-hotspot ===
-      // 1) per-hotspot: wPct/hPct (percentuali di w/h)
+      // Larghezze/Altezze per-hotspot dai dati (wPct/hPct) o fallback sizePct
       final wPct = (hs['wPct'] as num?)?.toDouble();
       final hPct = (hs['hPct'] as num?)?.toDouble();
-
-      // 2) fallback: sizePct su min(w,h) se non sono specificati wPct/hPct
       final sizePct = (hs['sizePct'] as num?)?.toDouble() ?? 0.22;
 
       late double planeW, planeH;
       if (wPct != null || hPct != null) {
-        planeW = (wPct ?? sizePct) * w;          // se manca wPct, usa sizePct
-        planeH = (hPct ?? (wPct ?? sizePct)) * h; // se manca hPct, usa wPct→sizePct
+        planeW = (wPct ?? sizePct) * w;
+        planeH = (hPct ?? (wPct ?? sizePct)) * h;
       } else {
-        final side = math.min(w, h) * sizePct;    // quadrato
+        final side = math.min(w, h) * sizePct; // quadrato
         planeW = side;
         planeH = side;
       }
 
-      // --- Immagine di dettaglio ---
+      // --- Immagine di dettaglio (visibile e tappabile) ---
       if (_cachedDetailImages != null && i < _cachedDetailImages!.length) {
         final plane = ARKitPlane(width: planeW, height: planeH);
         plane.materials.value = [
@@ -647,7 +693,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
       arkitController!.add(hitNode, parentNodeName: anchor.nodeName);
     }
 
-    debugPrint('Overlay + ${widget.painting.hotspots!.length} HOTSPOTS creati');
+    debugPrint('Velo bianco + ${widget.painting.hotspots!.length} HOTSPOTS creati');
   }
 
   // ————— Church effect (altri dipinti) —————
