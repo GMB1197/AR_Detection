@@ -150,6 +150,31 @@ class PaintingsData {
         'assets/leonardo_detail_drapery_overlay.png', // 1 (Madonna)
       ],
     ),
+
+    // Confronto tra le Veneri con transizione automatica
+    PaintingModel(
+      id: 'painting-10',
+      title: 'Venere di Urbino',
+      artist: 'Tiziano Vecellio',
+      description: 'Confronto automatico con le Veneri di Giorgione e Manet',
+      damagedImagePath: 'assets/painting-10.png',
+      restoredImagePath: 'assets/venere_giorgione.png', // Prima immagine del confronto
+      referenceImageName: 'painting-10',
+      widthRatio: 0.95,
+      heightRatio: 1.50,
+      offsetX: 0.00,  // Corregge spostamento orrizzontale
+      offsetY: 0.00,   // Corregge spostamento verticale
+      offsetZ: 0.001,
+
+      // Lista delle immagini da alternare (include anche restoredImagePath)
+      alternateImagePaths: [
+        'assets/venere_giorgione.png',   // Giorgione
+        'assets/venere_manet.png',       // Manet
+      ],
+      // Scale factors per correggere dimensioni diverse
+      // [1.0 = Giorgione, 1.0 = Manet ]
+      alternateScales: [1.0, 0.98],
+    ),
   ];
 
   static PaintingModel? getPaintingById(String id) {

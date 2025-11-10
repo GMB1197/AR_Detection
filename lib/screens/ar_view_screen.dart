@@ -9,6 +9,7 @@ import 'package:vector_math/vector_math_64.dart' as vector;
 import '../models/painting_model.dart';
 import '../services/ar_service.dart';
 import '../widgets/transparency_slider.dart';
+import '../widgets/transition_controls.dart';
 
 class ARViewScreen extends StatefulWidget {
   final PaintingModel painting;
@@ -38,6 +39,10 @@ class _ARViewScreenState extends State<ARViewScreen> {
   // Hint "tocca gli stencil"
   bool _showHotspotHint = false;
   Timer? _hintTimer;
+
+  // Transizione manuale per painting-10
+  int _currentImageIndex = 0;
+  List<String>? _cachedTransitionImages;
 
   ARKitNode? _overlayNode;          // overlay/stencil (altri dipinti)
   ARKitNode? _secondaryOverlayNode; // overlay secondario (altri dipinti)
@@ -86,6 +91,16 @@ class _ARViewScreenState extends State<ARViewScreen> {
       }
       debugPrint('${_cachedDetailImages!.length} immagini dettaglio precaricate');
     }
+
+    // Pre-caricamento per transizione manuale (painting-10)
+    if (widget.painting.alternateImagePaths != null) {
+      _cachedTransitionImages = [];
+      for (final p in widget.painting.alternateImagePaths!) {
+        final c = await ARService.preloadImage(p);
+        if (c != null) _cachedTransitionImages!.add(c);
+      }
+      debugPrint('${_cachedTransitionImages!.length} immagini di transizione precaricate');
+    }
   }
 
   void _resetDetection() {
@@ -118,6 +133,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
       _overlayNode = null;
       _secondaryOverlayNode = null;
       _selectedHotspot = null;
+      _currentImageIndex = 0;
     });
 
     if (arkitController != null) {
@@ -168,19 +184,22 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool showSlider = !['painting-4','painting-6','painting-7','painting-8','painting-9']
+    final bool showSlider = !['painting-4','painting-6','painting-7','painting-8','painting-9','painting-10']
         .contains(widget.painting.id);
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     final bool isInfoPainting = widget.painting.id == 'painting-8';
     final bool isSpecialEffect = ['painting-4','painting-6','painting-7'].contains(widget.painting.id);
     final bool isInteractive = widget.painting.hasInteractiveHotspots == true;
+    final bool isManualTransition = widget.painting.alternateImagePaths != null;
 
     String instructionText;
     if (isInfoPainting) {
       instructionText = 'Inquadra il quadro per scoprire la sua storia';
     } else if (isInteractive) {
       instructionText = 'Inquadra il quadro e tocca gli stencil';
+    } else if (isManualTransition) {
+      instructionText = 'Inquadra il quadro per il confronto manuale';
     } else if (isSpecialEffect) {
       instructionText = 'Inquadra il quadro per vedere l\'effetto AR';
     } else {
@@ -233,6 +252,17 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
           if (imageDetected && showSlider && _selectedHotspot == null)
             (isLandscape ? _buildLandscapeSlider() : _buildPortraitSlider()),
+
+          // Controlli per painting-10
+          if (imageDetected && widget.painting.id == 'painting-10')
+            TransitionControls(
+              currentIndex: _currentImageIndex,
+              totalImages: _cachedTransitionImages?.length ?? 0,
+              artistNames: const ['Giorgione - Venere dormiente', 'Manet - Olympia'],
+              onPrevious: () => _goToPreviousImage(animated: true),
+              onNext: () => _goToNextImage(animated: true),
+              isLandscape: isLandscape,
+            ),
         ],
       ),
     );
@@ -499,6 +529,15 @@ class _ARViewScreenState extends State<ARViewScreen> {
     // Tap gestito su immagini e hit-area invisibili
     arkitController!.onNodeTap = (List<String> nodes) {
       debugPrint('Tap: $nodes');
+
+      // Painting-10: tap sull'overlay per passare all'immagine successiva
+      if (widget.painting.id == 'painting-10' && nodes.contains('overlayTransition')) {
+        _goToNextImage(animated: true);
+        debugPrint('Tap su overlay transizione - passo all\'immagine successiva');
+        return;
+      }
+
+      // Painting-9: tap su hotspot
       for (final n in nodes) {
         final m1 = RegExp(r'detail_image_(\d+)').firstMatch(n);
         final m2 = RegExp(r'hit_area_(\d+)').firstMatch(n);
@@ -563,7 +602,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
         } else if (widget.painting.id == 'painting-8') {
           debugPrint('Painting-8 detected - info only');
         } else if (widget.painting.id == 'painting-9') {
-          _createIconographyOverlays(anchor); // ⭐ velo bianco + hotspot
+          _createIconographyOverlays(anchor); // velo bianco + hotspot
+        } else if (widget.painting.id == 'painting-10') {
+          _createManualTransitionOverlay(anchor); // transizione manuale
         } else if (cachedImageUrl != null) {
           final overlay = ARService.buildOverlayNode(
             anchor: anchor,
@@ -577,7 +618,8 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
         if (widget.painting.secondaryOverlayPath != null &&
             cachedSecondaryImageUrl != null &&
-            widget.painting.id != 'painting-9') {
+            widget.painting.id != 'painting-9' &&
+            widget.painting.id != 'painting-10') {
           final secondaryOverlay = ARService.buildSecondaryOverlayNode(
             anchor: anchor,
             painting: widget.painting,
@@ -737,5 +779,198 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
     paintingNode.geometry?.materials.value = [paintingMaterial];
     arkitController!.add(paintingNode);
+  }
+
+  // painting-10 — Transizione manuale tra immagini multiple
+  void _createManualTransitionOverlay(ARKitImageAnchor anchor) {
+    debugPrint('Manual-transition: Setup transizione manuale tra ${_cachedTransitionImages?.length ?? 0} immagini');
+
+    if (_cachedTransitionImages == null || _cachedTransitionImages!.isEmpty) {
+      debugPrint('Errore: Nessuna immagine caricata per la transizione');
+      return;
+    }
+
+    final baseW = anchor.referenceImagePhysicalSize.x * widget.painting.widthRatio;
+    final baseH = anchor.referenceImagePhysicalSize.y * widget.painting.heightRatio;
+    final ox = widget.painting.offsetX;
+    final oy = widget.painting.offsetY;
+    final oz = widget.painting.offsetZ;
+
+    // Applica scale del primo elemento
+    final firstScale = widget.painting.alternateScales?[0] ?? 1.0;
+    final w = baseW * firstScale;
+    final h = baseH * firstScale;
+
+    // Crea il piano per l'overlay
+    final plane = ARKitPlane(width: w, height: h);
+
+    // Inizia con la prima immagine
+    plane.materials.value = [
+      ARKitMaterial(
+        diffuse: ARKitMaterialProperty.image(_cachedTransitionImages![0]),
+        transparency: 1.0,
+        doubleSided: true,
+        lightingModelName: ARKitLightingModel.constant,
+      ),
+    ];
+
+    _overlayNode = ARKitNode(
+      name: 'overlayTransition',
+      geometry: plane,
+      position: vector.Vector3(ox, oy, oz),
+      eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
+      renderingOrder: 2000,
+    );
+
+    arkitController!.add(_overlayNode!, parentNodeName: anchor.nodeName);
+
+    // Inizializza l'indice alla prima immagine
+    _currentImageIndex = 0;
+
+    debugPrint('Transizione manuale creata: ${_cachedTransitionImages!.length} immagini');
+  }
+
+  // Aggiorna l'immagine dell'overlay con fade (e scale corretto)
+  void _updateTransitionImage({bool animated = true}) {
+    if (_overlayNode?.geometry == null ||
+        _cachedTransitionImages == null ||
+        _cachedTransitionImages!.isEmpty ||
+        currentAnchor == null) {
+      return;
+    }
+
+    final artistName = _currentImageIndex == 0 ? 'Giorgione' : 'Manet';
+    debugPrint('Transizione a $_currentImageIndex ($artistName)');
+
+    try {
+      if (animated) {
+        // Fade out
+        _animateTransparency(1.0, 0.0, const Duration(milliseconds: 400), () {
+          // Ricreo la geometria con lo scale corretto
+          _recreateOverlayWithScale();
+
+          // Attendo che il nuovo nodo sia aggiunto prima di fare fade in
+          Future.delayed(const Duration(milliseconds: 50), () {
+            if (mounted && _overlayNode != null) {
+              // Fade in
+              _animateTransparency(0.0, 1.0, const Duration(milliseconds: 400), null);
+            }
+          });
+        });
+      } else {
+        // Cambio istantaneo senza animazione
+        _recreateOverlayWithScale();
+      }
+    } catch (e) {
+      debugPrint('Errore durante la transizione: $e');
+    }
+  }
+
+  // Ricrea l'overlay con le dimensioni corrette per l'immagine corrente
+  void _recreateOverlayWithScale() {
+    if (currentAnchor == null) return;
+
+    final baseW = currentAnchor!.referenceImagePhysicalSize.x * widget.painting.widthRatio;
+    final baseH = currentAnchor!.referenceImagePhysicalSize.y * widget.painting.heightRatio;
+
+    // Applica lo scale specifico per l'immagine corrente
+    final scale = (widget.painting.alternateScales != null &&
+        _currentImageIndex < widget.painting.alternateScales!.length)
+        ? widget.painting.alternateScales![_currentImageIndex]
+        : 1.0;
+
+    final w = baseW * scale;
+    final h = baseH * scale;
+
+    // Rimuovi il vecchio nodo in modo sicuro
+    try {
+      arkitController?.remove('overlayTransition');
+      debugPrint('Nodo vecchio rimosso');
+    } catch (e) {
+      debugPrint('Errore rimozione nodo: $e');
+    }
+
+    // Crea nuovo piano con dimensioni corrette
+    final plane = ARKitPlane(width: w, height: h);
+    plane.materials.value = [
+      ARKitMaterial(
+        diffuse: ARKitMaterialProperty.image(_cachedTransitionImages![_currentImageIndex]),
+        transparency: 0.0, // Inizia trasparente per il fade in
+        doubleSided: true,
+        lightingModelName: ARKitLightingModel.constant,
+      ),
+    ];
+
+    // Usa esattamente gli stessi offset configurati
+    _overlayNode = ARKitNode(
+      name: 'overlayTransition',
+      geometry: plane,
+      position: vector.Vector3(
+        widget.painting.offsetX,
+        widget.painting.offsetY,
+        widget.painting.offsetZ,
+      ),
+      eulerAngles: vector.Vector3(0, math.pi * 1.5, 0), // 270° = pi * 1.5
+      renderingOrder: 2000,
+    );
+
+    try {
+      arkitController?.add(_overlayNode!, parentNodeName: currentAnchor!.nodeName);
+      debugPrint('Nuovo nodo aggiunto con scale $scale (w: ${w.toStringAsFixed(3)}, h: ${h.toStringAsFixed(3)})');
+    } catch (e) {
+      debugPrint('Errore aggiunta nodo: $e');
+    }
+  }
+
+  // Anima la trasparenza da startValue a endValue
+  void _animateTransparency(double startValue, double endValue, Duration duration, VoidCallback? onComplete) {
+    const steps = 20;
+    final stepDuration = duration.inMilliseconds ~/ steps;
+    int currentStep = 0;
+
+    Timer.periodic(Duration(milliseconds: stepDuration), (timer) {
+      if (!mounted || currentStep >= steps) {
+        timer.cancel();
+        if (onComplete != null) onComplete();
+        return;
+      }
+
+      currentStep++;
+      final progress = currentStep / steps;
+      final currentValue = startValue + (endValue - startValue) * progress;
+
+      try {
+        if (_overlayNode?.geometry != null && _cachedTransitionImages != null) {
+          _overlayNode!.geometry!.materials.value = [
+            ARKitMaterial(
+              diffuse: ARKitMaterialProperty.image(_cachedTransitionImages![_currentImageIndex]),
+              transparency: currentValue,
+              doubleSided: true,
+              lightingModelName: ARKitLightingModel.constant,
+            ),
+          ];
+        }
+      } catch (_) {
+        timer.cancel();
+      }
+    });
+  }
+
+  // Navigazione manuale - Immagine successiva
+  void _goToNextImage({bool animated = true}) {
+    if (_cachedTransitionImages == null) return;
+    setState(() {
+      _currentImageIndex = (_currentImageIndex + 1) % _cachedTransitionImages!.length;
+    });
+    _updateTransitionImage(animated: animated);
+  }
+
+  // Navigazione manuale - Immagine precedente
+  void _goToPreviousImage({bool animated = true}) {
+    if (_cachedTransitionImages == null) return;
+    setState(() {
+      _currentImageIndex = (_currentImageIndex - 1 + _cachedTransitionImages!.length) % _cachedTransitionImages!.length;
+    });
+    _updateTransitionImage(animated: animated);
   }
 }

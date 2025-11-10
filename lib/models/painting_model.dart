@@ -48,7 +48,7 @@ class PaintingModel {
   final double? secondaryOffsetY;
   final double? secondaryOffsetZ;
 
-  // ⭐ NUOVI CAMPI per painting-9 (hotspot interattivi)
+  // Painting-9 (hotspot interattivi)
   /// Se true, attiva hotspot interattivi invece dello slider
   final bool? hasInteractiveHotspots;
 
@@ -57,6 +57,13 @@ class PaintingModel {
 
   /// Percorsi delle immagini di dettaglio per gli hotspot
   final List<String>? detailImagePaths;
+
+  // Painting-10 (transizione manuale)
+  /// Percorsi delle immagini da alternare con controllo manuale
+  final List<String>? alternateImagePaths;
+
+  /// Scale factors per ogni immagine (per correggere dimensioni diverse)
+  final List<double>? alternateScales;
 
   const PaintingModel({
     required this.id,
@@ -81,6 +88,9 @@ class PaintingModel {
     this.hasInteractiveHotspots,
     this.hotspots,
     this.detailImagePaths,
+    // Parametri per transizione manuale
+    this.alternateImagePaths,
+    this.alternateScales,
   });
 
   /// Converte il modello in JSON
@@ -107,6 +117,8 @@ class PaintingModel {
       'hasInteractiveHotspots': hasInteractiveHotspots,
       'hotspots': hotspots,
       'detailImagePaths': detailImagePaths,
+      'alternateImagePaths': alternateImagePaths,
+      'alternateScales': alternateScales,
     };
   }
 
@@ -134,6 +146,8 @@ class PaintingModel {
       hasInteractiveHotspots: json['hasInteractiveHotspots'] as bool?,
       hotspots: (json['hotspots'] as List?)?.cast<Map<String, dynamic>>(),
       detailImagePaths: (json['detailImagePaths'] as List?)?.cast<String>(),
+      alternateImagePaths: (json['alternateImagePaths'] as List?)?.cast<String>(),
+      alternateScales: (json['alternateScales'] as List?)?.map((e) => (e as num).toDouble()).toList(),
     );
   }
 
@@ -160,6 +174,8 @@ class PaintingModel {
     bool? hasInteractiveHotspots,
     List<Map<String, dynamic>>? hotspots,
     List<String>? detailImagePaths,
+    List<String>? alternateImagePaths,
+    List<double>? alternateScales,
   }) {
     return PaintingModel(
       id: id ?? this.id,
@@ -183,6 +199,8 @@ class PaintingModel {
       hasInteractiveHotspots: hasInteractiveHotspots ?? this.hasInteractiveHotspots,
       hotspots: hotspots ?? this.hotspots,
       detailImagePaths: detailImagePaths ?? this.detailImagePaths,
+      alternateImagePaths: alternateImagePaths ?? this.alternateImagePaths,
+      alternateScales: alternateScales ?? this.alternateScales,
     );
   }
 

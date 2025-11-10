@@ -111,7 +111,10 @@ flutter:
      - assets/leonardo_detail_horse_overlay.png
      - assets/leonardo_detail_drapery_overlay.png
 
+    # PAINTING-10: Venere di Urbino di Tiziano Vecellio
      - assets/painting-10.png
+     - assets/venere_giorgione.png
+     - assets/venere_manet.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
