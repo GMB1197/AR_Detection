@@ -93,10 +93,11 @@ class _ARViewScreenState extends State<ARViewScreen> {
     }
 
     // Pre-caricamento per transizione manuale (painting-10)
-    if (widget.painting.alternateImagePaths != null) {
+    if (widget.painting.alternateImages != null) {
       _cachedTransitionImages = [];
-      for (final p in widget.painting.alternateImagePaths!) {
-        final c = await ARService.preloadImage(p);
+      for (final img in widget.painting.alternateImages!) {
+        final path = img['path'] as String;
+        final c = await ARService.preloadImage(path);
         if (c != null) _cachedTransitionImages!.add(c);
       }
       debugPrint('${_cachedTransitionImages!.length} immagini di transizione precaricate');
@@ -191,7 +192,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
     final bool isInfoPainting = widget.painting.id == 'painting-8';
     final bool isSpecialEffect = ['painting-4','painting-6','painting-7'].contains(widget.painting.id);
     final bool isInteractive = widget.painting.hasInteractiveHotspots == true;
-    final bool isManualTransition = widget.painting.alternateImagePaths != null;
+    final bool isManualTransition = widget.painting.alternateImages != null;
 
     String instructionText;
     if (isInfoPainting) {
@@ -258,7 +259,9 @@ class _ARViewScreenState extends State<ARViewScreen> {
             TransitionControls(
               currentIndex: _currentImageIndex,
               totalImages: _cachedTransitionImages?.length ?? 0,
-              artistNames: const ['Giorgione - Venere dormiente', 'Manet - Olympia'],
+              artistNames: widget.painting.alternateImages
+                  ?.map((img) => img['title'] as String? ?? '')
+                  .toList() ?? [],
               onPrevious: () => _goToPreviousImage(animated: true),
               onNext: () => _goToNextImage(animated: true),
               isLandscape: isLandscape,
@@ -790,16 +793,24 @@ class _ARViewScreenState extends State<ARViewScreen> {
       return;
     }
 
-    final baseW = anchor.referenceImagePhysicalSize.x * widget.painting.widthRatio;
-    final baseH = anchor.referenceImagePhysicalSize.y * widget.painting.heightRatio;
-    final ox = widget.painting.offsetX;
-    final oy = widget.painting.offsetY;
-    final oz = widget.painting.offsetZ;
+    if (widget.painting.alternateImages == null || widget.painting.alternateImages!.isEmpty) {
+      debugPrint('Errore: Nessuna configurazione alternateImages');
+      return;
+    }
 
-    // Applica scale del primo elemento
-    final firstScale = widget.painting.alternateScales?[0] ?? 1.0;
-    final w = baseW * firstScale;
-    final h = baseH * firstScale;
+    final baseW = anchor.referenceImagePhysicalSize.x;
+    final baseH = anchor.referenceImagePhysicalSize.y;
+
+    // Leggi configurazione prima immagine (indice 0)
+    final firstImg = widget.painting.alternateImages![0];
+    final widthRatio = (firstImg['widthRatio'] as num?)?.toDouble() ?? widget.painting.widthRatio;
+    final heightRatio = (firstImg['heightRatio'] as num?)?.toDouble() ?? widget.painting.heightRatio;
+    final offsetX = (firstImg['offsetX'] as num?)?.toDouble() ?? widget.painting.offsetX;
+    final offsetY = (firstImg['offsetY'] as num?)?.toDouble() ?? widget.painting.offsetY;
+    final offsetZ = (firstImg['offsetZ'] as num?)?.toDouble() ?? widget.painting.offsetZ;
+
+    final w = baseW * widthRatio;
+    final h = baseH * heightRatio;
 
     // Crea il piano per l'overlay
     final plane = ARKitPlane(width: w, height: h);
@@ -817,7 +828,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
     _overlayNode = ARKitNode(
       name: 'overlayTransition',
       geometry: plane,
-      position: vector.Vector3(ox, oy, oz),
+      position: vector.Vector3(offsetX, offsetY, offsetZ),
       eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
       renderingOrder: 2000,
     );
@@ -827,7 +838,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
     // Inizializza l'indice alla prima immagine
     _currentImageIndex = 0;
 
-    debugPrint('Transizione manuale creata: ${_cachedTransitionImages!.length} immagini');
+    debugPrint('Transizione manuale creata: ${_cachedTransitionImages!.length} immagini (prima: w=${w.toStringAsFixed(3)}m, h=${h.toStringAsFixed(3)}m, pos=($offsetX, $offsetY, $offsetZ))');
   }
 
   // Aggiorna l'immagine dell'overlay con fade (e scale corretto)
@@ -870,17 +881,25 @@ class _ARViewScreenState extends State<ARViewScreen> {
   void _recreateOverlayWithScale() {
     if (currentAnchor == null) return;
 
-    final baseW = currentAnchor!.referenceImagePhysicalSize.x * widget.painting.widthRatio;
-    final baseH = currentAnchor!.referenceImagePhysicalSize.y * widget.painting.heightRatio;
+    if (widget.painting.alternateImages == null ||
+        _currentImageIndex >= (widget.painting.alternateImages?.length ?? 0)) {
+      debugPrint('Errore: configurazione alternateImages non valida');
+      return;
+    }
 
-    // Applica lo scale specifico per l'immagine corrente
-    final scale = (widget.painting.alternateScales != null &&
-        _currentImageIndex < widget.painting.alternateScales!.length)
-        ? widget.painting.alternateScales![_currentImageIndex]
-        : 1.0;
+    final baseW = currentAnchor!.referenceImagePhysicalSize.x;
+    final baseH = currentAnchor!.referenceImagePhysicalSize.y;
 
-    final w = baseW * scale;
-    final h = baseH * scale;
+    // Leggi configurazione immagine corrente
+    final currentImg = widget.painting.alternateImages![_currentImageIndex];
+    final widthRatio = (currentImg['widthRatio'] as num?)?.toDouble() ?? widget.painting.widthRatio;
+    final heightRatio = (currentImg['heightRatio'] as num?)?.toDouble() ?? widget.painting.heightRatio;
+    final offsetX = (currentImg['offsetX'] as num?)?.toDouble() ?? widget.painting.offsetX;
+    final offsetY = (currentImg['offsetY'] as num?)?.toDouble() ?? widget.painting.offsetY;
+    final offsetZ = (currentImg['offsetZ'] as num?)?.toDouble() ?? widget.painting.offsetZ;
+
+    final w = baseW * widthRatio;
+    final h = baseH * heightRatio;
 
     // Rimuovi il vecchio nodo in modo sicuro
     try {
@@ -901,22 +920,18 @@ class _ARViewScreenState extends State<ARViewScreen> {
       ),
     ];
 
-    // Usa esattamente gli stessi offset configurati
+    // Usa gli offset configurati per questa immagine
     _overlayNode = ARKitNode(
       name: 'overlayTransition',
       geometry: plane,
-      position: vector.Vector3(
-        widget.painting.offsetX,
-        widget.painting.offsetY,
-        widget.painting.offsetZ,
-      ),
+      position: vector.Vector3(offsetX, offsetY, offsetZ),
       eulerAngles: vector.Vector3(0, math.pi * 1.5, 0), // 270° = pi * 1.5
       renderingOrder: 2000,
     );
 
     try {
       arkitController?.add(_overlayNode!, parentNodeName: currentAnchor!.nodeName);
-      debugPrint('Nuovo nodo aggiunto con scale $scale (w: ${w.toStringAsFixed(3)}, h: ${h.toStringAsFixed(3)})');
+      debugPrint('Nuovo nodo aggiunto: w=${w.toStringAsFixed(3)}m, h=${h.toStringAsFixed(3)}m, pos=($offsetX, $offsetY, $offsetZ)');
     } catch (e) {
       debugPrint('Errore aggiunta nodo: $e');
     }

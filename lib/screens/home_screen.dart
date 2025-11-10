@@ -3,17 +3,59 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/paintings_data.dart' as data;
+import '../models/painting_model.dart';
 import '../widgets/painting_card.dart';
 import 'ar_view_screen.dart' as views;
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _selectedFilter = 'all';
 
   Future<void> _launchURL() async {
     final Uri url = Uri.parse('https://and-digital.it/it/case-study/6');
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       debugPrint('Could not launch $url');
     }
+  }
+
+  List<PaintingModel> _getFilteredPaintings() {
+    if (_selectedFilter == 'all') {
+      return data.PaintingsData.paintings;
+    }
+
+    return data.PaintingsData.paintings.where((painting) {
+      switch (_selectedFilter) {
+        case 'slider':
+        // Dipinti con slider trasparenza (restauro classico)
+          return !['painting-4', 'painting-6', 'painting-7', 'painting-8', 'painting-9', 'painting-10']
+              .contains(painting.id);
+
+        case 'interactive':
+        // Dipinti con hotspot interattivi
+          return painting.hasInteractiveHotspots == true;
+
+        case 'transition':
+        // Dipinti con transizione manuale tra immagini
+          return painting.alternateImages != null && painting.alternateImages!.isNotEmpty;
+
+        case 'effects':
+        // Dipinti con effetti speciali (chiesa, pannelli)
+          return ['painting-4', 'painting-6', 'painting-7'].contains(painting.id);
+
+        case 'info':
+        // Dipinti solo informazioni
+          return painting.id == 'painting-8';
+
+        default:
+          return true;
+      }
+    }).toList();
   }
 
   @override
@@ -253,10 +295,143 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
+          // Filtri per funzionalità
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 15,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.filter_list, size: 20, color: Colors.black87),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Filtra per funzionalità',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildFilterChip(
+                        label: 'Tutti',
+                        value: 'all',
+                        icon: Icons.grid_view,
+                        count: data.PaintingsData.paintings.length,
+                      ),
+                      _buildFilterChip(
+                        label: 'Restauro',
+                        value: 'slider',
+                        icon: Icons.tune,
+                        count: data.PaintingsData.paintings
+                            .where((p) => !['painting-4', 'painting-6', 'painting-7', 'painting-8', 'painting-9', 'painting-10'].contains(p.id))
+                            .length,
+                      ),
+                      _buildFilterChip(
+                        label: 'Interattivi',
+                        value: 'interactive',
+                        icon: Icons.touch_app,
+                        count: data.PaintingsData.paintings
+                            .where((p) => p.hasInteractiveHotspots == true)
+                            .length,
+                      ),
+                      _buildFilterChip(
+                        label: 'Confronto',
+                        value: 'transition',
+                        icon: Icons.compare_arrows,
+                        count: data.PaintingsData.paintings
+                            .where((p) => p.alternateImages != null)
+                            .length,
+                      ),
+                      _buildFilterChip(
+                        label: 'Effetti',
+                        value: 'effects',
+                        icon: Icons.auto_awesome,
+                        count: 3,
+                      ),
+                      _buildFilterChip(
+                        label: 'Info',
+                        value: 'info',
+                        icon: Icons.info_outline,
+                        count: 1,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           // Griglia di dipinti
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            sliver: SliverGrid(
+            sliver: _getFilteredPaintings().isEmpty
+                ? SliverToBoxAdapter(
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 40),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 15,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Nessun dipinto trovato',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Prova a selezionare un altro filtro',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+                : SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 1,
                 childAspectRatio: 0.85,
@@ -264,7 +439,8 @@ class HomeScreen extends StatelessWidget {
               ),
               delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                  final painting = data.PaintingsData.paintings[index];
+                  final filteredPaintings = _getFilteredPaintings();
+                  final painting = filteredPaintings[index];
                   return PaintingCard(
                     painting: painting,
                     onTap: () {
@@ -279,7 +455,7 @@ class HomeScreen extends StatelessWidget {
                     },
                   );
                 },
-                childCount: data.PaintingsData.paintings.length,
+                childCount: _getFilteredPaintings().length,
               ),
             ),
           ),
@@ -287,6 +463,68 @@ class HomeScreen extends StatelessWidget {
           const SliverToBoxAdapter(child: SizedBox(height: 50)),
         ],
       ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required String value,
+    required IconData icon,
+    required int count,
+  }) {
+    final bool isSelected = _selectedFilter == value;
+
+    return FilterChip(
+      selected: isSelected,
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: isSelected ? Colors.white : Colors.grey[700],
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              color: isSelected ? Colors.white : Colors.grey[800],
+            ),
+          ),
+          if (count > 0) ...[
+            const SizedBox(width: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : Colors.grey.withValues(alpha: 0.30),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                count.toString(),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? Colors.white : Colors.grey[700],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+      selectedColor: Colors.black,
+      backgroundColor: Colors.grey[100],
+      checkmarkColor: Colors.white,
+      showCheckmark: false,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      onSelected: (selected) {
+        setState(() {
+          _selectedFilter = value;
+        });
+      },
     );
   }
 }

@@ -151,29 +151,42 @@ class PaintingsData {
       ],
     ),
 
-    // Confronto tra le Veneri con transizione automatica
+    // Confronto tra le Veneri con transizione manuale
     PaintingModel(
       id: 'painting-10',
       title: 'Venere di Urbino',
       artist: 'Tiziano Vecellio',
-      description: 'Confronto automatico con le Veneri di Giorgione e Manet',
+      description: 'Confronto manuale con le Veneri di Giorgione e Manet',
       damagedImagePath: 'assets/painting-10.png',
-      restoredImagePath: 'assets/venere_giorgione.png', // Prima immagine del confronto
+      restoredImagePath: 'assets/venere_giorgione.png',
       referenceImageName: 'painting-10',
-      widthRatio: 0.95,
-      heightRatio: 1.50,
-      offsetX: 0.00,  // Corregge spostamento orrizzontale
-      offsetY: 0.00,   // Corregge spostamento verticale
-      offsetZ: 0.001,
+      widthRatio: 1.00,
+      heightRatio: 1.00,
+      offsetX: 0.00,
+      offsetY: 0.00,
+      offsetZ: 0.000,
 
-      // Lista delle immagini da alternare (include anche restoredImagePath)
-      alternateImagePaths: [
-        'assets/venere_giorgione.png',   // Giorgione
-        'assets/venere_manet.png',       // Manet
+      // Immagini alternative con tutte le proprietà
+      alternateImages: [
+        {
+          'path': 'assets/venere_giorgione.png',
+          'widthRatio': 0.95,   // Larghezza (moltiplicatore del marker)
+          'heightRatio': 1.45,  // Altezza (moltiplicatore del marker)
+          'offsetX': 0.00,      // Spostamento orizzontale (metri)
+          'offsetY': 0.00,      // Spostamento verticale (metri)
+          'offsetZ': 0.000,     // Distanza dalla superficie (metri)
+          'title': 'Giorgione - Venere dormiente',
+        },
+        {
+          'path': 'assets/venere_manet.png',
+          'widthRatio': 0.95,   // Leggermente più larga
+          'heightRatio': 1.35,  // Leggermente più alta
+          'offsetX': 0.00,      // Sposta orizzontalmente
+          'offsetY': 0.00,      // Sposta verticalmente
+          'offsetZ': 0.000,     // 1mm davanti al marker
+          'title': 'Manet - Olympia',
+        },
       ],
-      // Scale factors per correggere dimensioni diverse
-      // [1.0 = Giorgione, 1.0 = Manet ]
-      alternateScales: [1.0, 0.98],
     ),
   ];
 

@@ -59,11 +59,9 @@ class PaintingModel {
   final List<String>? detailImagePaths;
 
   // Painting-10 (transizione manuale)
-  /// Percorsi delle immagini da alternare con controllo manuale
-  final List<String>? alternateImagePaths;
-
-  /// Scale factors per ogni immagine (per correggere dimensioni diverse)
-  final List<double>? alternateScales;
+  /// Lista di immagini alternative con tutte le proprietà per ognuna
+  /// Ogni elemento è un Map con: path, widthRatio, heightRatio, offsetX, offsetY, offsetZ, title
+  final List<Map<String, dynamic>>? alternateImages;
 
   const PaintingModel({
     required this.id,
@@ -89,8 +87,7 @@ class PaintingModel {
     this.hotspots,
     this.detailImagePaths,
     // Parametri per transizione manuale
-    this.alternateImagePaths,
-    this.alternateScales,
+    this.alternateImages,
   });
 
   /// Converte il modello in JSON
@@ -117,8 +114,7 @@ class PaintingModel {
       'hasInteractiveHotspots': hasInteractiveHotspots,
       'hotspots': hotspots,
       'detailImagePaths': detailImagePaths,
-      'alternateImagePaths': alternateImagePaths,
-      'alternateScales': alternateScales,
+      'alternateImages': alternateImages,
     };
   }
 
@@ -146,8 +142,7 @@ class PaintingModel {
       hasInteractiveHotspots: json['hasInteractiveHotspots'] as bool?,
       hotspots: (json['hotspots'] as List?)?.cast<Map<String, dynamic>>(),
       detailImagePaths: (json['detailImagePaths'] as List?)?.cast<String>(),
-      alternateImagePaths: (json['alternateImagePaths'] as List?)?.cast<String>(),
-      alternateScales: (json['alternateScales'] as List?)?.map((e) => (e as num).toDouble()).toList(),
+      alternateImages: (json['alternateImages'] as List?)?.cast<Map<String, dynamic>>(),
     );
   }
 
@@ -174,8 +169,7 @@ class PaintingModel {
     bool? hasInteractiveHotspots,
     List<Map<String, dynamic>>? hotspots,
     List<String>? detailImagePaths,
-    List<String>? alternateImagePaths,
-    List<double>? alternateScales,
+    List<Map<String, dynamic>>? alternateImages,
   }) {
     return PaintingModel(
       id: id ?? this.id,
@@ -199,8 +193,7 @@ class PaintingModel {
       hasInteractiveHotspots: hasInteractiveHotspots ?? this.hasInteractiveHotspots,
       hotspots: hotspots ?? this.hotspots,
       detailImagePaths: detailImagePaths ?? this.detailImagePaths,
-      alternateImagePaths: alternateImagePaths ?? this.alternateImagePaths,
-      alternateScales: alternateScales ?? this.alternateScales,
+      alternateImages: alternateImages ?? this.alternateImages,
     );
   }
 
