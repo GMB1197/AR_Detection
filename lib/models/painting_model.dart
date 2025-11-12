@@ -12,6 +12,9 @@ class PaintingModel {
   /// Descrizione breve del quadro
   final String description;
 
+  /// Campo per testo lungo del pannello info painting-8
+  final String? info;
+
   /// Percorso dell'immagine danneggiata (per la UI)
   final String damagedImagePath;
 
@@ -68,6 +71,7 @@ class PaintingModel {
     required this.title,
     required this.artist,
     required this.description,
+    this.info,
     required this.damagedImagePath,
     required this.restoredImagePath,
     required this.referenceImageName,

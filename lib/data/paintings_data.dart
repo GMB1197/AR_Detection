@@ -65,17 +65,49 @@ class PaintingsData {
     ),
     PaintingModel(
       id: 'painting-6',
-      title: 'Annunciazione',
+      title: 'Annunciazione (confronto Botticelli)',
       artist: 'Sandro Botticelli',
-      description: 'Scansiona lo spazio centrale per vedere i pannelli completi',
-      damagedImagePath: 'assets/painting-6.png',
-      restoredImagePath: 'assets/botticelli_annunciazione_over.png',
+      description: 'Confronto manuale tra due versioni dell’Annunciazione',
       referenceImageName: 'painting-6',
-      widthRatio: 2.90,
-      heightRatio: 4.40,
+
+      // Usa un asset ESISTENTE anche per questi due campi (evita path inesistenti)
+      damagedImagePath: 'assets/painting-6.png',
+      restoredImagePath: 'assets/Botticelli_annunciazione_del_Metropolitan.jpg',
+
+      // Geometria/offset: riusa i tuoi default (regola se serve)
+      widthRatio: 1.0,
+      heightRatio: 1.0,
       offsetX: 0.0,
       offsetY: 0.0,
-      offsetZ: 0.000,
+      offsetZ: 0.0,
+
+      // Immagini di confronto per la transizione manuale (come painting-10)
+      alternateImages: [
+        {
+          'title': 'Annunciazione – Metropolitan Museum of Art',
+          'path': 'assets/Botticelli_annunciazione_del_Metropolitan.jpg',
+          'source': 'The Metropolitan Museum of Art, New York',
+          'info': '''Il dipinto è l'"Annunciazione" di Sandro Botticelli, realizzata con tempera su tavola intorno al 1485. Si trova nella collezione del Metropolitan Museum of Art di New York.
+L'opera raffigura l'Arcangelo Gabriele che annuncia alla Vergine Maria l'imminente nascita di Gesù Cristo.
+La scena è ambientata in un interno architettonico, con una prospettiva monocentrica che crea un'illusione di profondità.
+Una fila di colonne al centro divide lo spazio occupato dall'angelo da quello della camera da letto della Vergine.
+L'angelo tiene in mano un giglio bianco, simbolo di purezza.
+Questo piccolo quadro fu quasi certamente commissionato per la devozione privata.''',
+        },
+        {
+          'title': 'Annunciazione – Glasgow (ca. 1490)',
+          'path': 'assets/AnnunciazioneBotticelli-1490_glasgow.jpg',
+          'source': 'Kelvingrove Art Gallery and Museum, Glasgow',
+          'info': '''Il dipinto mostrato nell'immagine è l'Annunciazione (nota anche come Annunciazione di Glasgow), un'opera a tempera su tavola di Sandro Botticelli, realizzata intorno al 1490.
+L'opera raffigura l'Arcangelo Gabriele che annuncia alla Vergine Maria che concepirà il figlio di Dio.
+È conservata nella Kelvingrove Art Gallery and Museum di Glasgow, in Scozia.
+Il dipinto è noto per il suo uso della prospettiva, sebbene un'analisi dettagliata riveli che la griglia prospettica non è perfettamente corretta, suggerendo un artificio prospettico da parte dell'artista.
+La scena è ambientata in un elegante, ma spoglio, palazzo rinascimentale, con un giardino visibile sullo sfondo.''',
+        },
+      ],
+
+      secondaryOverlayPath: null,
+      hasInteractiveHotspots: false,
     ),
     PaintingModel(
       id: 'painting-7',
@@ -96,6 +128,12 @@ class PaintingsData {
       title: 'Ritratto di Papa Leone X',
       artist: 'Raffaello Sanzio',
       description: 'Inquadra per scoprire la storia di questo capolavoro',
+      info: '''L'opera, realizzata nel 1518, ritrae al centro Papa Leone X, al secolo Giovanni de' Medici, seduto tra i suoi cugini cardinali Giulio de' Medici (futuro Papa Clemente VII) e Luigi de' Rossi.
+
+• Il dipinto è noto per l'uso magistrale del colore, in particolare le varie sfumature di rosso, e per l'attenzione ai dettagli, come il riflesso della stanza sul pomello della sedia papale.
+• Il papa è raffigurato con una lente d'ingrandimento in mano, un dettaglio che allude alla sua miopia, mentre si appoggia a un libro miniato.
+• Il ritratto fu commissionato per essere inviato a Firenze in occasione delle nozze del nipote del papa, Lorenzo duca di Urbino, con Madeleine de La Tour d'Auvergne.
+• L'opera originale è conservata presso le Gallerie degli Uffizi a Firenze, ma ne esistono diverse copie, tra cui una di Andrea del Sarto esposta al Museo di Capodimonte a Napoli.''',
       damagedImagePath: 'assets/painting-8.png',
       restoredImagePath: 'assets/painting-8.png',
       referenceImageName: 'painting-8',
@@ -170,21 +208,45 @@ class PaintingsData {
       alternateImages: [
         {
           'path': 'assets/venere_giorgione.png',
-          'widthRatio': 0.95,   // Larghezza (moltiplicatore del marker)
-          'heightRatio': 1.45,  // Altezza (moltiplicatore del marker)
-          'offsetX': 0.00,      // Spostamento orizzontale (metri)
-          'offsetY': 0.00,      // Spostamento verticale (metri)
-          'offsetZ': 0.000,     // Distanza dalla superficie (metri)
+          'widthRatio': 0.95,
+          'heightRatio': 1.45,
+          'offsetX': 0.00,
+          'offsetY': 0.00,
+          'offsetZ': 0.000,
           'title': 'Giorgione - Venere dormiente',
+          'source': 'Gemäldegalerie Alte Meister, Dresda',
+          'info': '''Il dipinto mostrato nell'immagine è la Venere dormiente (nota anche come Venere di Dresda), un'opera d'arte iconica del Rinascimento italiano.
+Dettagli del Dipinto
+Artista Principale: Giorgione (Giorgio Barbarelli da Castelfranco).
+Completamento: Si ritiene ampiamente che l'allievo e collaboratore di Giorgione, Tiziano Vecellio, abbia completato il paesaggio e il cielo dopo la morte prematura di Giorgione nel 1510.
+Data: Circa 1508-1510.
+Tecnica: Olio su tela.
+Dimensioni: 108,5 cm × 175 cm.
+Ubicazione: Attualmente è conservato nella Gemäldegalerie Alte Meister (Pinacoteca dei Maestri Antichi) a Dresda, Germania.
+Significato e Influenza
+La Venere dormiente è considerata un'opera fondamentale nella storia dell'arte occidentale per diversi motivi:
+È il primo nudo femminile reclinato su larga scala conosciuto nella pittura occidentale dal tempo dell'antichità romana.
+Ha stabilito il genere del nudo mitologico-pastorale erotico, influenzando generazioni di artisti.
+La composizione armoniosa tra la figura umana e il paesaggio circostante fu un'innovazione significativa.
+Il dipinto ha ispirato numerose opere successive, tra cui la famosa Venere di Urbino di Tiziano, la Venere Rokeby di Velázquez, la Maja desnuda di Goya e l'Olympia di Manet.
+Originariamente, il dipinto includeva una figura di Cupido seduto ai piedi di Venere, che fu successivamente coperta nel XIX secolo.''',
         },
         {
           'path': 'assets/venere_manet.png',
-          'widthRatio': 0.95,   // Leggermente più larga
-          'heightRatio': 1.35,  // Leggermente più alta
-          'offsetX': 0.00,      // Sposta orizzontalmente
-          'offsetY': 0.00,      // Sposta verticalmente
-          'offsetZ': 0.000,     // 1mm davanti al marker
+          'widthRatio': 0.95,
+          'heightRatio': 1.35,
+          'offsetX': 0.00,
+          'offsetY': 0.00,
+          'offsetZ': 0.000,
           'title': 'Manet - Olympia',
+          'source': 'Musée d\'Orsay, Parigi',
+          'info': '''L'immagine mostra il celebre dipinto "Olympia" di Édouard Manet.
+Titolo: Olympia
+Artista: Édouard Manet
+Data: 1863
+Tecnica: Olio su tela
+Ubicazione attuale: Museo d'Orsay, Parigi
+Il dipinto suscitò grande scandalo al Salon di Parigi del 1865 a causa del suo realismo e della rappresentazione di una prostituta, un soggetto non idealizzato e privo di giustificazioni mitologiche o storiche, che guardava lo spettatore con uno sguardo diretto e audace. L'opera è considerata un'icona dell'arte moderna.''',
         },
       ],
     ),

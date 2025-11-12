@@ -24,6 +24,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Apre l'AR senza dipinto specifico - riconosce tutti i markers
+  void _openUniversalAR() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const views.ARViewScreen(
+          painting: null, // Nessun dipinto specifico - riconosce tutti
+        ),
+      ),
+    );
+  }
+
   List<PaintingModel> _getFilteredPaintings() {
     if (_selectedFilter == 'all') {
       return data.PaintingsData.paintings;
@@ -151,64 +163,116 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Descrizione
+          // Bottone AR principale (cliccabile)
           SliverToBoxAdapter(
             child: Container(
               margin: const EdgeInsets.all(20),
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(12),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _openUniversalAR,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 4),
                         ),
-                        child: const Icon(
-                          Icons.palette,
-                          color: Colors.white,
-                          size: 24,
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            const Expanded(
+                              child: Text(
+                                'Esplora in Realtà Aumentata',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      const Expanded(
-                        child: Text(
-                          'Restauri in Realtà Aumentata',
+                        const SizedBox(height: 16),
+                        Text(
+                          'Inquadra qualsiasi dipinto con la fotocamera per scoprire restauri, dettagli nascosti, confronti e contenuti interattivi in realtà aumentata',
                           style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
+                            fontSize: 15,
+                            color: Colors.grey[700],
+                            height: 1.5,
+                            letterSpacing: 0.2,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Scegli un dipinto e inquadra la sua cartolina con la fotocamera per vedere la versione restaurata in realtà aumentata',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.grey[700],
-                      height: 1.5,
-                      letterSpacing: 0.2,
+                        const SizedBox(height: 16),
+                        // Badge informativo
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                size: 16,
+                                color: Colors.grey[700],
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Riconosce automaticamente tutti i ${data.PaintingsData.paintings.length} dipinti',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -229,14 +293,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
+                          Color(0xFF2c2c2c),
                           Color(0xFF1a1a1a),
-                          Color(0xFF0a0a0a),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: Colors.black.withValues(alpha: 0.15),
                           blurRadius: 15,
                           offset: const Offset(0, 4),
                         ),
@@ -251,41 +315,47 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
-                            Icons.article_outlined,
+                            Icons.description,
                             color: Colors.white,
                             size: 24,
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Expanded(
+                        const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Scopri il progetto',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
+                                  fontSize: 17,
                                   fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
+                                  color: Colors.white,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Text(
                                 'Documentazione completa e case study',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                  letterSpacing: 0.2,
+                                  color: Colors.white70,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          size: 18,
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.open_in_new,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),
@@ -295,28 +365,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Filtri per funzionalità
+          // Filtri
           SliverToBoxAdapter(
             child: Container(
               margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 15,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.filter_list, size: 20, color: Colors.black87),
+                      Icon(
+                        Icons.filter_list,
+                        size: 20,
+                        color: Colors.grey[700],
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Filtra per funzionalità',

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.2+3
+version: 1.0.3+4
 
 environment:
   sdk: ^3.9.2
@@ -94,9 +94,10 @@ flutter:
      - assets/painting-5.png              # Dipinto colorato per UI
      - assets/lippi_madonna_disegno.png   # Disegno monocromatico (overlay AR)
 
-    # PAINTING-6: Pannello centrale → Pannelli laterali Annunciazione
-     - assets/painting-6.png              # Pannello centrale per UI
-     - assets/botticelli_annunciazione_over.png  # Pannelli laterali (overlay AR)
+    # PAINTING-6: Confronto
+     - assets/painting-6.png
+     - assets/Botticelli_annunciazione_del_Metropolitan.jpg
+     - assets/AnnunciazioneBotticelli-1490_glasgow.jpg
 
     # PAINTING-7: Pannello centrale → Pannelli laterali Battaglia
      - assets/painting-7.png              # Pannello centrale per UI
