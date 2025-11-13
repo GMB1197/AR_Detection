@@ -28,16 +28,16 @@ class TransparencySlider extends StatelessWidget {
 
   Widget _buildPortraitSlider() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 18),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 10,
-            spreadRadius: 1,
+            blurRadius: 8,
+            spreadRadius: 0,
           ),
         ],
       ),
@@ -51,29 +51,29 @@ class TransparencySlider extends StatelessWidget {
                 'Rovinato',
                 style: TextStyle(
                   color: Colors.white70,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
               Text(
                 '${(value * 100).toInt()}%',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const Text(
                 'Restaurato',
                 style: TextStyle(
                   color: Colors.white70,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           SliderTheme(
             data: SliderThemeData(
               activeTrackColor: Colors.white,
@@ -81,12 +81,12 @@ class TransparencySlider extends StatelessWidget {
               thumbColor: Colors.white,
               overlayColor: Colors.white.withValues(alpha: 0.2),
               thumbShape: const RoundSliderThumbShape(
-                enabledThumbRadius: 8,
+                enabledThumbRadius: 6,
               ),
               overlayShape: const RoundSliderOverlayShape(
-                overlayRadius: 16,
+                overlayRadius: 14,
               ),
-              trackHeight: 2.5,
+              trackHeight: 2.0,
             ),
             child: Slider(
               value: value,
@@ -105,15 +105,15 @@ class TransparencySlider extends StatelessWidget {
   Widget _buildLandscapeSlider() {
     return Container(
       margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 10,
-            spreadRadius: 1,
+            blurRadius: 8,
+            spreadRadius: 0,
           ),
         ],
       ),
@@ -124,22 +124,22 @@ class TransparencySlider extends StatelessWidget {
             'Restaurato',
             style: TextStyle(
               color: Colors.white70,
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
+              fontSize: 9,
+              fontWeight: FontWeight.w400,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             '${(value * 100).toInt()}%',
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           SizedBox(
-            height: 200,
+            height: 170,
             child: RotatedBox(
               quarterTurns: 3,
               child: SliderTheme(
@@ -149,12 +149,12 @@ class TransparencySlider extends StatelessWidget {
                   thumbColor: Colors.white,
                   overlayColor: Colors.white.withValues(alpha: 0.2),
                   thumbShape: const RoundSliderThumbShape(
-                    enabledThumbRadius: 8,
+                    enabledThumbRadius: 6,
                   ),
                   overlayShape: const RoundSliderOverlayShape(
-                    overlayRadius: 16,
+                    overlayRadius: 14,
                   ),
-                  trackHeight: 2.5,
+                  trackHeight: 2.0,
                 ),
                 child: Slider(
                   value: value,
@@ -167,13 +167,13 @@ class TransparencySlider extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           const Text(
             'Rovinato',
             style: TextStyle(
               color: Colors.white70,
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
+              fontSize: 9,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ],
