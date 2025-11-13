@@ -898,13 +898,15 @@ class _ARViewScreenState extends State<ARViewScreen> {
   // ———— wrapper per il widget estratto del dettaglio hotspot ————
   Widget _buildHotspotDetailView() {
     final cp = painting;
-    if (_selectedHotspot == null || cp?.hotspots == null) return const SizedBox.shrink();
+    if (_selectedHotspot == null || cp?.hotspots == null) {
+      return const SizedBox.shrink();
+    }
     final hotspot = cp!.hotspots![_selectedHotspot!];
 
     final detailImageUrl =
-    (_cachedDetailImages != null && _selectedHotspot! < _cachedDetailImages!.length)
-        ? _cachedDetailImages![_selectedHotspot!]
-        : null;
+        (_cachedDetailImages != null && _selectedHotspot! < _cachedDetailImages!.length)
+            ? _cachedDetailImages![_selectedHotspot!]
+            : null;
 
     return HotspotDetailView(
       title: hotspot['title'] as String,
