@@ -667,11 +667,6 @@ class _ARViewScreenState extends State<ARViewScreen> {
   }
 
   void _createImmersiveChurchBackground(ARKitImageAnchor anchor) {
-    final t = anchor.transform;
-    final ax = t.getColumn(3).x;
-    final ay = t.getColumn(3).y;
-    final az = t.getColumn(3).z;
-
     final bgUrl = cachedImageUrl;
     if (bgUrl == null) {
       debugPrint('Nessuna immagine background caricata');
@@ -688,16 +683,16 @@ class _ARViewScreenState extends State<ARViewScreen> {
     final backgroundNode = ARKitNode(
       name: 'churchBackground',
       geometry: backgroundGeometry,
-      position: vector.Vector3(ax, ay + 0.5, az - 1.5),
+      position: vector.Vector3(0.0, 0.5, -1.5),
     );
 
     backgroundNode.geometry?.materials.value = [backgroundMaterial];
-    arkitController!.add(backgroundNode);
+    arkitController!.add(backgroundNode, parentNodeName: anchor.nodeName);
 
-    _addPaintingInChurch(anchor, ax, ay, az);
+    _addPaintingInChurch(anchor);
   }
 
-  void _addPaintingInChurch(ARKitImageAnchor anchor, double ax, double ay, double az) {
+  void _addPaintingInChurch(ARKitImageAnchor anchor) {
     final cp = painting;
     if (cp == null) return;
 
@@ -710,11 +705,11 @@ class _ARViewScreenState extends State<ARViewScreen> {
     final paintingNode = ARKitNode(
       name: 'paintingInChurch',
       geometry: paintingGeometry,
-      position: vector.Vector3(ax, ay - 1.0, az - 1.49),
+      position: vector.Vector3(0.0, -1.0, -1.49),
     );
 
     paintingNode.geometry?.materials.value = [paintingMaterial];
-    arkitController!.add(paintingNode);
+    arkitController!.add(paintingNode, parentNodeName: anchor.nodeName);
   }
 
   void _createManualTransitionOverlay(ARKitImageAnchor anchor) {

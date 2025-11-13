@@ -6,6 +6,7 @@ import '../data/paintings_data.dart' as data;
 import '../models/painting_model.dart';
 import '../widgets/painting_card.dart';
 import 'ar_view_screen.dart' as views;
+import 'painting_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -509,7 +510,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => views.ARViewScreen(
+                          builder: (context) => PaintingDetailScreen(
                             painting: painting,
                           ),
                         ),
