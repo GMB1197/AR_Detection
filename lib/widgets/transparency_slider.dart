@@ -44,34 +44,13 @@ class TransparencySlider extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Rovinato',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                '${(value * 100).toInt()}%',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Text(
-                'Restaurato',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          Text(
+            '${(value * 100).toInt()}%',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 10),
           SliderTheme(
@@ -120,15 +99,6 @@ class TransparencySlider extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Restaurato',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 12),
           Text(
             '${(value * 100).toInt()}%',
             style: const TextStyle(
@@ -165,15 +135,6 @@ class TransparencySlider extends StatelessWidget {
                   onChangeEnd: onChangeEnd,
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Rovinato',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ],

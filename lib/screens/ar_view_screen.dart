@@ -485,12 +485,21 @@ class _ARViewScreenState extends State<ARViewScreen> {
 
     if (matchedPainting == null) return;
 
+    // Per painting-4, rimuoviamo e ricarichiamo sempre i nodi per aggiornare la posizione
+    final isPainting4 = matchedPainting.id == 'painting-4';
+
     if (imageDetected && newRefName == currentRefName) {
-      debugPrint('Anchor per lo stesso dipinto già attivo: $newRefName');
-      return;
+      if (isPainting4) {
+        debugPrint('Painting-4 rilevato di nuovo - ricreo i nodi con nuove coordinate');
+        _clearOverlayNodesLight();
+        // Non ritorniamo, continuiamo per ricreare i nodi
+      } else {
+        debugPrint('Anchor per lo stesso dipinto già attivo: $newRefName');
+        return;
+      }
     }
 
-    final switching = imageDetected && widget.painting == null && newRefName != currentRefName;
+    final switching = imageDetected && widget.painting == null && newRefName != currentRefName && !isPainting4;
     if (switching) {
       debugPrint('Switch a nuovo dipinto: $newRefName (da $currentRefName)');
       _clearOverlayNodesLight();
