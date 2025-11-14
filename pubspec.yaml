@@ -42,6 +42,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_svg: ^2.2.1
   url_launcher: ^6.3.1
+  flutter_markdown: ^0.7.3
 
 flutter_launcher_icons:
     android: true
@@ -87,7 +88,6 @@ flutter:
     # PAINTING-4: Madonna → Vista chiesa
      - assets/painting-4.png              # Dipinto AR Release
      - assets/trinita_1.png               # Chiesa con riquadro
-     - assets/trinita_1_complete.png               # Chiesa con riquadro
      - assets/painting-4-overlay.png      # (overlay AR)
 
     # PAINTING-5: Madonna → Disegno preparatorio

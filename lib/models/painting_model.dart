@@ -12,6 +12,9 @@ class PaintingModel {
   /// Descrizione breve del quadro
   final String description;
 
+  /// Descrizione lunga (Markdown) per la schermata di dettaglio
+  final String? detailDescription;
+
   /// Campo per testo lungo del pannello info painting-8
   final String? info;
 
@@ -39,6 +42,10 @@ class PaintingModel {
   /// Offset Z per posizionamento custom (in metri, distanza dalla superficie)
   final double offsetZ;
 
+  /// Rotazione Y in radianti (default: math.pi * 1.5 = 270°)
+  /// Usa null per il default, oppure specifica un valore custom
+  final double? rotationY;
+
   /// Path per un secondo overlay (opzionale) - es. dipinto dentro la chiesa
   final String? secondaryOverlayPath;
 
@@ -50,6 +57,9 @@ class PaintingModel {
   final double? secondaryOffsetX;
   final double? secondaryOffsetY;
   final double? secondaryOffsetZ;
+
+  /// Rotazione Y per il secondo overlay (in radianti)
+  final double? secondaryRotationY;
 
   // Painting-9 (hotspot interattivi)
   /// Se true, attiva hotspot interattivi invece dello slider
@@ -63,7 +73,7 @@ class PaintingModel {
 
   // Painting-10 (transizione manuale)
   /// Lista di immagini alternative con tutte le proprietà per ognuna
-  /// Ogni elemento è un Map con: path, widthRatio, heightRatio, offsetX, offsetY, offsetZ, title
+  /// Ogni elemento è un Map con: path, widthRatio, heightRatio, offsetX, offsetY, offsetZ, rotationY, title
   final List<Map<String, dynamic>>? alternateImages;
 
   const PaintingModel({
@@ -71,6 +81,7 @@ class PaintingModel {
     required this.title,
     required this.artist,
     required this.description,
+    this.detailDescription,
     this.info,
     required this.damagedImagePath,
     required this.restoredImagePath,
@@ -80,12 +91,14 @@ class PaintingModel {
     this.offsetX = 0.0,
     this.offsetY = 0.0,
     this.offsetZ = 0.003,
+    this.rotationY,
     this.secondaryOverlayPath,
     this.secondaryWidthRatio,
     this.secondaryHeightRatio,
     this.secondaryOffsetX,
     this.secondaryOffsetY,
     this.secondaryOffsetZ,
+    this.secondaryRotationY,
     // Nuovi parametri opzionali
     this.hasInteractiveHotspots,
     this.hotspots,
@@ -101,6 +114,8 @@ class PaintingModel {
       'title': title,
       'artist': artist,
       'description': description,
+      'detailDescription': detailDescription,
+      'info': info,
       'damagedImagePath': damagedImagePath,
       'restoredImagePath': restoredImagePath,
       'referenceImageName': referenceImageName,
@@ -109,12 +124,14 @@ class PaintingModel {
       'offsetX': offsetX,
       'offsetY': offsetY,
       'offsetZ': offsetZ,
+      'rotationY': rotationY,
       'secondaryOverlayPath': secondaryOverlayPath,
       'secondaryWidthRatio': secondaryWidthRatio,
       'secondaryHeightRatio': secondaryHeightRatio,
       'secondaryOffsetX': secondaryOffsetX,
       'secondaryOffsetY': secondaryOffsetY,
       'secondaryOffsetZ': secondaryOffsetZ,
+      'secondaryRotationY': secondaryRotationY,
       'hasInteractiveHotspots': hasInteractiveHotspots,
       'hotspots': hotspots,
       'detailImagePaths': detailImagePaths,
@@ -129,6 +146,8 @@ class PaintingModel {
       title: json['title'] as String,
       artist: json['artist'] as String,
       description: json['description'] as String,
+      detailDescription: json['detailDescription'] as String?,
+      info: json['info'] as String?,
       damagedImagePath: json['damagedImagePath'] as String,
       restoredImagePath: json['restoredImagePath'] as String,
       referenceImageName: json['referenceImageName'] as String,
@@ -137,12 +156,14 @@ class PaintingModel {
       offsetX: (json['offsetX'] as num?)?.toDouble() ?? 0.0,
       offsetY: (json['offsetY'] as num?)?.toDouble() ?? 0.0,
       offsetZ: (json['offsetZ'] as num?)?.toDouble() ?? 0.003,
+      rotationY: (json['rotationY'] as num?)?.toDouble(),
       secondaryOverlayPath: json['secondaryOverlayPath'] as String?,
       secondaryWidthRatio: (json['secondaryWidthRatio'] as num?)?.toDouble(),
       secondaryHeightRatio: (json['secondaryHeightRatio'] as num?)?.toDouble(),
       secondaryOffsetX: (json['secondaryOffsetX'] as num?)?.toDouble(),
       secondaryOffsetY: (json['secondaryOffsetY'] as num?)?.toDouble(),
       secondaryOffsetZ: (json['secondaryOffsetZ'] as num?)?.toDouble(),
+      secondaryRotationY: (json['secondaryRotationY'] as num?)?.toDouble(),
       hasInteractiveHotspots: json['hasInteractiveHotspots'] as bool?,
       hotspots: (json['hotspots'] as List?)?.cast<Map<String, dynamic>>(),
       detailImagePaths: (json['detailImagePaths'] as List?)?.cast<String>(),
@@ -156,6 +177,8 @@ class PaintingModel {
     String? title,
     String? artist,
     String? description,
+    String? detailDescription,
+    String? info,
     String? damagedImagePath,
     String? restoredImagePath,
     String? referenceImageName,
@@ -164,12 +187,14 @@ class PaintingModel {
     double? offsetX,
     double? offsetY,
     double? offsetZ,
+    double? rotationY,
     String? secondaryOverlayPath,
     double? secondaryWidthRatio,
     double? secondaryHeightRatio,
     double? secondaryOffsetX,
     double? secondaryOffsetY,
     double? secondaryOffsetZ,
+    double? secondaryRotationY,
     bool? hasInteractiveHotspots,
     List<Map<String, dynamic>>? hotspots,
     List<String>? detailImagePaths,
@@ -180,6 +205,8 @@ class PaintingModel {
       title: title ?? this.title,
       artist: artist ?? this.artist,
       description: description ?? this.description,
+      detailDescription: detailDescription ?? this.detailDescription,
+      info: info ?? this.info,
       damagedImagePath: damagedImagePath ?? this.damagedImagePath,
       restoredImagePath: restoredImagePath ?? this.restoredImagePath,
       referenceImageName: referenceImageName ?? this.referenceImageName,
@@ -188,12 +215,14 @@ class PaintingModel {
       offsetX: offsetX ?? this.offsetX,
       offsetY: offsetY ?? this.offsetY,
       offsetZ: offsetZ ?? this.offsetZ,
+      rotationY: rotationY ?? this.rotationY,
       secondaryOverlayPath: secondaryOverlayPath ?? this.secondaryOverlayPath,
       secondaryWidthRatio: secondaryWidthRatio ?? this.secondaryWidthRatio,
       secondaryHeightRatio: secondaryHeightRatio ?? this.secondaryHeightRatio,
       secondaryOffsetX: secondaryOffsetX ?? this.secondaryOffsetX,
       secondaryOffsetY: secondaryOffsetY ?? this.secondaryOffsetY,
       secondaryOffsetZ: secondaryOffsetZ ?? this.secondaryOffsetZ,
+      secondaryRotationY: secondaryRotationY ?? this.secondaryRotationY,
       hasInteractiveHotspots: hasInteractiveHotspots ?? this.hasInteractiveHotspots,
       hotspots: hotspots ?? this.hotspots,
       detailImagePaths: detailImagePaths ?? this.detailImagePaths,

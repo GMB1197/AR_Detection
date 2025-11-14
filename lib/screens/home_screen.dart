@@ -6,6 +6,7 @@ import '../data/paintings_data.dart' as data;
 import '../models/painting_model.dart';
 import '../widgets/painting_card.dart';
 import 'ar_view_screen.dart' as views;
+import 'painting_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -173,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: _openUniversalAR,
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -242,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         // Badge informativo
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
+                            horizontal: 10,
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
@@ -257,9 +258,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 size: 16,
                                 color: Colors.grey[700],
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 3),
                               Text(
-                                'Riconosce automaticamente tutti i ${data.PaintingsData.paintings.length} dipinti',
+                                'Riconosce automaticamente tutti e ${data.PaintingsData.paintings.length} dipinti',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[700],
@@ -509,7 +510,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => views.ARViewScreen(
+                            builder: (context) => PaintingDetailScreen(
                             painting: painting,
                           ),
                         ),

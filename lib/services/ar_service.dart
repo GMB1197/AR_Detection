@@ -37,8 +37,12 @@ class ARService {
     final double w = anchor.referenceImagePhysicalSize.x * painting.widthRatio;
     final double h = anchor.referenceImagePhysicalSize.y * painting.heightRatio;
 
+    // Usa rotationY custom se specificato, altrimenti usa il default (270°)
+    final double rotY = painting.rotationY ?? (math.pi * 1.5);
+
     debugPrint('Overlay size: width=$w m, height=$h m');
-    debugPrint('Position offset: x=${painting.offsetX}, y=${painting.offsetY}, z=${painting.offsetZ}');
+    debugPrint('Position offset: x=$painting.offsetX, y=$painting.offsetY, z=$painting.offsetZ');
+    debugPrint('Rotation Y: ${rotY * 180 / math.pi}° ($rotY rad)');
 
     final material = ARKitMaterial(
       diffuse: ARKitMaterialProperty.image(cachedImageUrl),
@@ -61,7 +65,7 @@ class ARService {
         painting.offsetY,
         painting.offsetZ,
       ),
-      eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
+      eulerAngles: vector.Vector3(0, rotY, 0),
       renderingOrder: 2000,
     );
   }
@@ -110,8 +114,12 @@ class ARService {
     final double w = anchor.referenceImagePhysicalSize.x * (painting.secondaryWidthRatio ?? 1.0);
     final double h = anchor.referenceImagePhysicalSize.y * (painting.secondaryHeightRatio ?? 1.0);
 
+    // Usa secondaryRotationY custom se specificato, altrimenti usa il default (270°)
+    final double rotY = painting.secondaryRotationY ?? (math.pi * 1.5);
+
     debugPrint('Secondary overlay size: width=$w m, height=$h m');
-    debugPrint('Secondary position: x=${painting.secondaryOffsetX}, y=${painting.secondaryOffsetY}, z=${painting.secondaryOffsetZ}');
+    debugPrint('Secondary position: x=$painting.secondaryOffsetX, y=$painting.secondaryOffsetY, z=$painting.secondaryOffsetZ');
+    debugPrint('Secondary rotation Y: ${rotY * 180 / math.pi}° ($rotY rad)');
 
     final material = ARKitMaterial(
       diffuse: ARKitMaterialProperty.image(cachedImageUrl),
@@ -134,7 +142,7 @@ class ARService {
         painting.secondaryOffsetY ?? 0.0,
         painting.secondaryOffsetZ ?? 0.002,
       ),
-      eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
+      eulerAngles: vector.Vector3(0, rotY, 0),
       renderingOrder: 1999,
     );
   }
@@ -149,7 +157,11 @@ class ARService {
     final double w = anchor.referenceImagePhysicalSize.x * painting.widthRatio;
     final double h = anchor.referenceImagePhysicalSize.y * painting.heightRatio;
 
+    // Usa rotationY custom se specificato, altrimenti usa il default (270°)
+    final double rotY = painting.rotationY ?? (math.pi * 1.5);
+
     debugPrint('Fixed overlay size: width=$w m, height=$h m');
+    debugPrint('Fixed rotation Y: ${rotY * 180 / math.pi}° ($rotY rad)');
 
     final material = ARKitMaterial(
       diffuse: ARKitMaterialProperty.image(cachedImageUrl),
@@ -175,7 +187,7 @@ class ARService {
         m.getColumn(3).y + painting.offsetY,
         m.getColumn(3).z + painting.offsetZ,
       ),
-      eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
+      eulerAngles: vector.Vector3(0, rotY, 0),
       renderingOrder: 2000,
     );
   }

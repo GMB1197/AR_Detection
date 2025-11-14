@@ -1,5 +1,9 @@
 import '../models/painting_model.dart';
 
+//description: Descrizione della card del dipinto in Home
+//detailDescription: Descrizione all'interno di painting_detail_screen.dart
+//info: Testo lungo che uso come pannello info in AR
+
 class PaintingsData {
   static final List<PaintingModel> paintings = [
     PaintingModel(
@@ -12,6 +16,12 @@ class PaintingsData {
       referenceImageName: 'painting-1-damaged',
       widthRatio: 1.44,
       heightRatio: 0.94,
+
+      detailDescription: '''L'immagine mostra un'opera d'arte intitolata "Adorazione dei pastori" o "Adorazione del Bambino" di Gerrit van Honthorst (noto in Italia come Gherardo delle Notti).
+  Il dipinto è famoso per l'uso magistrale del chiaroscuro e per l'illuminazione che sembra provenire dal Bambino Gesù stesso, come se fosse una fonte di luce.
+  L'opera originale, risalente al 1619-1620 circa, è conservata presso la Galleria degli Uffizi a Firenze.
+  L'immagine mostra il dipinto nel suo stato attuale, danneggiato in modo significativo dall'attentato mafioso di via dei Georgofili nel 1993, che ha causato ingenti perdite di superficie pittorica.
+  L'artista olandese Gherardo delle Notti era un seguace dello stile di Caravaggio, noto per le sue scene notturne e l'uso drammatico della luce. ''',
     ),
     PaintingModel(
       id: 'painting-2',
@@ -23,6 +33,12 @@ class PaintingsData {
       referenceImageName: 'painting-2-damaged',
       widthRatio: 1.0,
       heightRatio: 1.0,
+
+      detailDescription: '''L'immagine mostra il chiostro dell'Anantara Convento di Amalfi Grand Hotel, un ex convento benedettino situato sulla scogliera di Amalfi. 
+    L'edificio originario, il Convento di San Francesco, fu fondato nel XIII secolo, ma l'attuale struttura incorpora elementi dell'XI secolo.
+        Il chiostro, visibile nell'immagine, presenta un notevole stile arabo-normanno con una serie di archi intrecciati e colonne sottili.
+    Oggi l'edificio è un hotel di lusso che offre viste panoramiche sulla Costiera Amalfitana.
+    L'hotel è noto per la sua architettura storica unica e la sua posizione drammatica a strapiombo sul mare.''',
     ),
     PaintingModel(
       id: 'painting-3',
@@ -34,6 +50,12 @@ class PaintingsData {
       referenceImageName: 'painting-3-damaged',
       widthRatio: 1.0,
       heightRatio: 1.0,
+
+      detailDescription: '''L'immagine mostra il dipinto a olio su tela intitolato "I giocatori di carte" di Bartolomeo Manfredi. 
+Il dipinto, risalente al 1617-1618 circa, è conservato presso le Gallerie degli Uffizi a Firenze. 
+L'opera è nota per essere stata gravemente danneggiata dall'attentato mafioso di via dei Georgofili avvenuto il 27 maggio 1993. 
+Considerato inizialmente irrecuperabile a causa delle centinaia di schegge che lo hanno trafitto, il dipinto è stato sottoposto a un lungo e complesso restauro, che ha utilizzato nuove tecnologie per ricomporre i frammenti. 
+Il restauro ha lasciato visibili i segni indelebili dei danni subiti, come testimonianza della strage e simbolo di resistenza. ''',
     ),
     PaintingModel(
       id: 'painting-4',
@@ -43,11 +65,27 @@ class PaintingsData {
       damagedImagePath: 'assets/painting-4-overlay.png',
       restoredImagePath: 'assets/trinita_1.png',
       referenceImageName: 'painting-4',
-      widthRatio: 3.0,
-      heightRatio: 3.0,
+      widthRatio: 1.0,
+      heightRatio: 1.0,
       offsetX: 0.0,
       offsetY: 0.0,
       offsetZ: 0.000,
+
+      detailDescription: '''L'immagine mostra la Maestà di Santa Trinita, un'importante pala d'altare del pittore fiorentino Cimabue. 
+L'opera, dipinta su tavola a tempera e oro, risale al periodo tra il 1290 e il 1300 circa. 
+Raffigura la Vergine Maria in trono con il Bambino Gesù in grembo, circondata da otto angeli, e quattro profeti a mezzo busto nella parte inferiore. 
+La pala fu commissionata per l'altare maggiore della chiesa di Santa Trinita a Firenze, dove rimase fino al 1471. 
+È considerata un'opera innovativa per l'epoca, poiché Cimabue tentò di superare la rigidità della pittura bizantina introducendo un senso di profondità spaziale nel trono architettonico e una maggiore umanità nelle figure. 
+Attualmente l'opera è conservata ed esposta presso le Gallerie degli Uffizi a Firenze. ''',
+
+      // ROTAZIONE CHIESA:
+      //rotationY: -0.17, // circa -10° (leggera rotazione a sinistra)
+      // rotationY: -0.26,  // circa -15° (rotazione moderata a sinistra)
+      // rotationY: -0.35,  // circa -20° (rotazione marcata a sinistra)
+      rotationY: 0.0,    // 0° (perfettamente frontale)
+      // rotationY: 0.17,   // circa +10° (leggera rotazione a destra)
+      // rotationY: 0.26,   // circa +15° (rotazione moderata a destra)
+      // rotationY: 0.35,   // circa +20° (rotazione marcata a destra)
     ),
     PaintingModel(
       id: 'painting-5',
@@ -62,12 +100,23 @@ class PaintingsData {
       offsetX: 0.0,
       offsetY: 0.0,
       offsetZ: 0.001,
+
+      detailDescription: '''Il dipinto raffigurato è la celebre opera rinascimentale di Filippo Lippi, intitolata "Madonna col Bambino e angeli" (detta anche Lippina). 
+L'opera, databile intorno al 1465, è una tempera su tavola ed è conservata presso la Galleria degli Uffizi a Firenze. 
+È considerata una delle opere più note e interamente autografe dell'artista, nonché un punto di riferimento per le successive rappresentazioni della Madonna con Bambino, in particolare quelle di Sandro Botticelli. 
+La Vergine è ritratta con le fattezze di Lucrezia Buti, una monaca di cui Lippi si innamorò e che rapì, destando scandalo all'epoca. 
+Il dipinto è noto per la sua modernità, l'umanità terrena della rappresentazione e l'uso di elementi come l'acconciatura e le vesti, in linea con la moda fiorentina del tempo. ''',
     ),
     PaintingModel(
       id: 'painting-6',
       title: 'Annunciazione (confronto Botticelli)',
       artist: 'Sandro Botticelli',
       description: 'Confronto manuale tra due versioni dell’Annunciazione',
+      detailDescription: '''Il dipinto mostrato nell'immagine è l'Annunciazione di Cestello. 
+È un'opera a tempera su tavola realizzata da Sandro Botticelli.
+Il dipinto è stato creato intorno al 1489-1490.
+Attualmente è conservato ed esposto nella Galleria degli Uffizi a Firenze.
+La scena raffigura l'Arcangelo Gabriele che annuncia a Maria la sua gravidanza divina.''',
       referenceImageName: 'painting-6',
 
       // Usa un asset ESISTENTE anche per questi due campi (evita path inesistenti)
@@ -122,14 +171,21 @@ La scena è ambientata in un elegante, ma spoglio, palazzo rinascimentale, con u
       offsetX: 0.0,
       offsetY: 0.0,
       offsetZ: 0.000,
+
+      detailDescription: '''L'immagine mostra un pannello del celebre trittico di Paolo Uccello intitolato La Battaglia di San Romano. L'opera, realizzata intorno al 1438, commemora la vittoria delle truppe fiorentine su quelle senesi avvenuta nel 1432. 
+Il trittico era originariamente composto da tre grandi tavole, oggi separate e conservate in musei diversi: la Galleria degli Uffizi a Firenze, la National Gallery a Londra e il Louvre a Parigi. 
+Il pannello specifico nell'immagine (quello degli Uffizi) raffigura l'episodio del disarcionamento di Bernardino della Ciarda, condottiero dell'esercito di Siena, da parte di Niccolò da Tolentino, comandante fiorentino. 
+L'opera è rinomata per l'uso innovativo della prospettiva lineare, una tecnica geometrico-matematica che ha permesso all'artista di creare un'illusione di profondità spaziale su una superficie piana. 
+Il dipinto fonde elementi del Gotico Internazionale con la nuova sensibilità del Rinasci''',
     ),
     PaintingModel(
       id: 'painting-8',
       title: 'Ritratto di Papa Leone X',
       artist: 'Raffaello Sanzio',
       description: 'Inquadra per scoprire la storia di questo capolavoro',
-      info: '''L'opera, realizzata nel 1518, ritrae al centro Papa Leone X, al secolo Giovanni de' Medici, seduto tra i suoi cugini cardinali Giulio de' Medici (futuro Papa Clemente VII) e Luigi de' Rossi.
+      detailDescription: 'Utilizza la fotocamera del tuo cullare per scoprire le informazioni di questo capolavoro attraverso la realtà aumentata',
 
+      info: '''L'opera, realizzata nel 1518, ritrae al centro Papa Leone X, al secolo Giovanni de' Medici, seduto tra i suoi cugini cardinali Giulio de' Medici (futuro Papa Clemente VII) e Luigi de' Rossi.
 • Il dipinto è noto per l'uso magistrale del colore, in particolare le varie sfumature di rosso, e per l'attenzione ai dettagli, come il riflesso della stanza sul pomello della sedia papale.
 • Il papa è raffigurato con una lente d'ingrandimento in mano, un dettaglio che allude alla sua miopia, mentre si appoggia a un libro miniato.
 • Il ritratto fu commissionato per essere inviato a Firenze in occasione delle nozze del nipote del papa, Lorenzo duca di Urbino, con Madeleine de La Tour d'Auvergne.
@@ -150,6 +206,11 @@ La scena è ambientata in un elegante, ma spoglio, palazzo rinascimentale, con u
       title: 'L\'Annunciazione',
       artist: 'Leonardo da Vinci',
       description: 'Tocca gli stencil per scoprire i disegni preparatori',
+      detailDescription: '''Il dipinto mostrato nell'immagine è l'Annunciazione di Leonardo da Vinci, un capolavoro giovanile del Rinascimento italiano. 
+L'opera, realizzata tra il 1472 e il 1475 circa, è conservata presso la Galleria degli Uffizi a Firenze. 
+Raffigura l'Arcangelo Gabriele che annuncia alla Vergine Maria che diventerà madre di Gesù, un tema popolare nell'arte cristiana. 
+Leonardo si discosta dalla tradizione ambientando la scena all'aperto in un giardino recintato (hortus conclusus), simbolo della purezza di Maria, anziché in una camera da letto. 
+Il dipinto è noto per l'uso innovativo della prospettiva lineare e aerea, e per la rappresentazione naturalistica delle figure e del paesaggio, che riflettono l'indagine scientifica del reale da parte dell'artista. ''',
       damagedImagePath: 'assets/painting-9.png',
       restoredImagePath: 'assets/leonardo_annunciazione_stencil.png',
       referenceImageName: 'painting-9',
@@ -195,6 +256,15 @@ La scena è ambientata in un elegante, ma spoglio, palazzo rinascimentale, con u
       title: 'Venere di Urbino',
       artist: 'Tiziano Vecellio',
       description: 'Confronto manuale con le Veneri di Giorgione e Manet',
+      detailDescription: '''La Venere di Urbino è un dipinto a olio su tela (119×165 cm) di Tiziano Vecellio, databile al 1538 e conservato nella Galleria degli Uffizi di Firenze.
+Considerata come uno dei più grandi capolavori della storia della pittura, la Venere di Urbino incarna la perfetta rappresentazione della donna, che come Venere, diventa simbolo di amore, bellezza e fertilità. Tutto ciò è reso, da Tiziano, grazie all'uso sapiente del colore e dei suoi contrasti, così come il sottile gioco di allusioni e significati. iziano rappresentò la sua Venere mettendo in secondo piano i riferimenti mitologici, trasponendola anzi in un ambiente domestico moderno. La sensuale dea, completamente nuda, è infatti distesa su un letto coperto da un lenzuolo bianco (che lascia intravedere il doppio materasso con un motivo tessuto a fiori), appoggiando il busto e un braccio su due cuscini, mentre guarda lo spettatore e con la mano sinistra si copre il pube (tema della Venere pudica), mentre con la destra lascia cadere lentamente alcune rose rosse, fiore sacro alla dea. Ciò indica il passare del tempo: infatti, proprio il fatto che sia una bella dea come la Venere a tenere in mano un simbolo con tale significato vuol dire che la bellezza svanisce con l'avanzare della vecchiaia e che quindi bisogna basare la propria esistenza su altre qualità più durature, quali, appunto, la fedeltà.
+Ai suoi piedi sta rannicchiato un cagnolino, dipinto con amorevole realismo (lo stesso del Ritratto di Eleonora Gonzaga della Rovere), che simboleggia la fedeltà, facendo da esempio alla sposa del granduca: il messaggio è quello di essere sensuali, ma solo per il proprio sposo. La dea ha infatti un anello al dito mignolo e indossa, oltre a un bel bracciale d'oro con pietre preziose, una perla a forma di goccia come orecchino, simbolo di purezza. I capelli biondi sono acconciati con una treccia che gira attorno alla nuca, e sciolti sulle spalle, in bei ricci dorati che hanno la morbidezza tipica delle migliori opere dell'artista. La fisionomia della donna ricorda quella di altre figure femminili di Tiziano (ad esempio la Bella, il Ritratto di fanciulla in pelliccia e il Ritratto di fanciulla con cappello piumato) e forse era un'amante dell'artista che faceva da modella.
+A differenza della Venere dormiente di Giorgione, la dea di Tiziano fissa in modo deciso l'osservatore, noncurante della sua nudità, con una posa ambigua, a metà strada tra il pudore e l'invito. La forte cesura della parete scura alle spalle della dea, che si interrompe a metà del dipinto, crea una decisa linea di forza che indirizza lo sguardo dello spettatore proprio verso l'inguine, per risalire poi lungo il ventre e il petto, fino allo sguardo.
+
+Nel Dettaglio i toni scuri o freddi dello sfondo fanno inoltre risaltare il calore delle luminose carni femminili, grazie anche alla presenza della macchia colore rosso nei materassi scoperti ad arte. In secondo piano vengono rappresentate due ancelle che cercano i vestiti della dea nel vestiario.
+
+Come ambientazione notiamo la pesante tenda verde che separa l'alcova dal resto della stanza è scostata e mostra un interno rinascimentale, con una stanza dal pavimento a riquadri, in cui due ancelle stanno frugando in un cassone i vestiti da far indossare alla dea. Una è infatti inginocchiata a rovistare e l'altra, con un vestito rosso e un'elegante acconciatura, tiene già un ricco vestito sulla spalla.
+Candelabre dorate decorano le pareti, mentre le cassapanche hanno girali all'antica con elementi antropomorfi, segno di un arredamento aggiornatissimo alle tendenze più recenti. La luce, oltre che da davanti, entra dalla finestra sullo sfondo, dotata di colonna al centro e dalla quale si vede, oltre al vaso di mirto, un cielo rischiarato dalla luce dorata e un albero, che allude all'esistenza di un giardino. Inoltre l'illuminazione nella stanza proviene da sinistra e getta una netta ombra della serva in piedi sulla parete dietro di essa.''',
       damagedImagePath: 'assets/painting-10.png',
       restoredImagePath: 'assets/venere_giorgione.png',
       referenceImageName: 'painting-10',

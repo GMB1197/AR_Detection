@@ -672,11 +672,16 @@ class _ARViewScreenState extends State<ARViewScreen> {
     final ay = t.getColumn(3).y;
     final az = t.getColumn(3).z;
 
+    final cp = painting;
     final bgUrl = cachedImageUrl;
     if (bgUrl == null) {
       debugPrint('Nessuna immagine background caricata');
       return;
     }
+
+    // Usa rotationY custom se specificato, altrimenti usa 0 (frontale)
+    final double rotY = cp?.rotationY ?? 0.0;
+    debugPrint('Chiesa rotazione Y: ${rotY * 180 / math.pi}° ($rotY rad)');
 
     final backgroundGeometry = ARKitPlane(width: 4.0, height: 6.0);
     final backgroundMaterial = ARKitMaterial(
@@ -689,6 +694,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
       name: 'churchBackground',
       geometry: backgroundGeometry,
       position: vector.Vector3(ax, ay + 0.5, az - 1.5),
+      eulerAngles: vector.Vector3(0, rotY, 0),
     );
 
     backgroundNode.geometry?.materials.value = [backgroundMaterial];
@@ -741,9 +747,12 @@ class _ARViewScreenState extends State<ARViewScreen> {
     final offsetX = (firstImg['offsetX'] as num?)?.toDouble() ?? cp.offsetX;
     final offsetY = (firstImg['offsetY'] as num?)?.toDouble() ?? cp.offsetY;
     final offsetZ = (firstImg['offsetZ'] as num?)?.toDouble() ?? cp.offsetZ;
+    final rotY = (firstImg['rotationY'] as num?)?.toDouble() ?? cp.rotationY ?? (math.pi * 1.5);
 
     final w = baseW * widthRatio;
     final h = baseH * heightRatio;
+
+    debugPrint('Prima immagine - rotazione Y: ${rotY * 180 / math.pi}° ($rotY rad)');
 
     final plane = ARKitPlane(width: w, height: h);
     plane.materials.value = [
@@ -759,7 +768,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
       name: 'overlayTransition',
       geometry: plane,
       position: vector.Vector3(offsetX, offsetY, offsetZ),
-      eulerAngles: vector.Vector3(0, math.pi / 2 + math.pi, 0),
+      eulerAngles: vector.Vector3(0, rotY, 0),
       renderingOrder: 2000,
     );
 
@@ -767,7 +776,7 @@ class _ARViewScreenState extends State<ARViewScreen> {
     _currentImageIndex = 0;
 
     debugPrint('Transizione manuale creata: ${_cachedTransitionImages!.length} immagini '
-        '(prima: w=${w.toStringAsFixed(3)}m, h=${h.toStringAsFixed(3)}m, pos=($offsetX, $offsetY, $offsetZ))');
+        '(prima: w=${w.toStringAsFixed(3)}m, h=${h.toStringAsFixed(3)}m, pos=($offsetX, $offsetY, $offsetZ), rot=${rotY * 180 / math.pi}°)');
   }
 
   void _updateTransitionImage({bool animated = true}) {
@@ -817,9 +826,12 @@ class _ARViewScreenState extends State<ARViewScreen> {
     final offsetX = (currentImg['offsetX'] as num?)?.toDouble() ?? cp.offsetX;
     final offsetY = (currentImg['offsetY'] as num?)?.toDouble() ?? cp.offsetY;
     final offsetZ = (currentImg['offsetZ'] as num?)?.toDouble() ?? cp.offsetZ;
+    final rotY = (currentImg['rotationY'] as num?)?.toDouble() ?? cp.rotationY ?? (math.pi * 1.5);
 
     final w = baseW * widthRatio;
     final h = baseH * heightRatio;
+
+    debugPrint('Immagine ${_currentImageIndex + 1} - rotazione Y: ${rotY * 180 / math.pi}° ($rotY rad)');
 
     try { arkitController?.remove('overlayTransition'); } catch (e) { debugPrint('Errore rimozione nodo: $e'); }
 
@@ -837,13 +849,13 @@ class _ARViewScreenState extends State<ARViewScreen> {
       name: 'overlayTransition',
       geometry: plane,
       position: vector.Vector3(offsetX, offsetY, offsetZ),
-      eulerAngles: vector.Vector3(0, math.pi * 1.5, 0),
+      eulerAngles: vector.Vector3(0, rotY, 0),
       renderingOrder: 2000,
     );
 
     try {
       arkitController?.add(_overlayNode!, parentNodeName: anchor.nodeName);
-      debugPrint('Nuovo nodo aggiunto: w=${w.toStringAsFixed(3)}m, h=${h.toStringAsFixed(3)}m, pos=($offsetX, $offsetY, $offsetZ)');
+      debugPrint('Nuovo nodo aggiunto: w=${w.toStringAsFixed(3)}m, h=${h.toStringAsFixed(3)}m, pos=($offsetX, $offsetY, $offsetZ), rot=${rotY * 180 / math.pi}°');
     } catch (e) {
       debugPrint('Errore aggiunta nodo: $e');
     }

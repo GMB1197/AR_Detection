@@ -29,10 +29,10 @@ class TransparencySlider extends StatelessWidget {
   Widget _buildPortraitSlider() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 18),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
@@ -44,36 +44,15 @@ class TransparencySlider extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Rovinato',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                '${(value * 100).toInt()}%',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Text(
-                'Restaurato',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          Text(
+            '${(value * 100).toInt()}%',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           SliderTheme(
             data: SliderThemeData(
               activeTrackColor: Colors.white,
@@ -81,12 +60,12 @@ class TransparencySlider extends StatelessWidget {
               thumbColor: Colors.white,
               overlayColor: Colors.white.withValues(alpha: 0.2),
               thumbShape: const RoundSliderThumbShape(
-                enabledThumbRadius: 11,
+                enabledThumbRadius: 8,
               ),
               overlayShape: const RoundSliderOverlayShape(
-                overlayRadius: 22,
+                overlayRadius: 16,
               ),
-              trackHeight: 3.5,
+              trackHeight: 2.5,
             ),
             child: Slider(
               value: value,
@@ -105,10 +84,10 @@ class TransparencySlider extends StatelessWidget {
   Widget _buildLandscapeSlider() {
     return Container(
       margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
@@ -120,26 +99,17 @@ class TransparencySlider extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Restaurato',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 12),
           Text(
             '${(value * 100).toInt()}%',
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           SizedBox(
-            height: 220,
+            height: 200,
             child: RotatedBox(
               quarterTurns: 3,
               child: SliderTheme(
@@ -165,15 +135,6 @@ class TransparencySlider extends StatelessWidget {
                   onChangeEnd: onChangeEnd,
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Rovinato',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ],

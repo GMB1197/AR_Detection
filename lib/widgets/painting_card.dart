@@ -144,13 +144,13 @@ class PaintingCard extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.camera_alt,
+                                    Icons.info_outline,
                                     size: 18,
                                     color: Colors.white,
                                   ),
                                   SizedBox(width: 8),
                                   Text(
-                                    'Scansiona in AR',
+                                    'Scopri di più',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 14,
