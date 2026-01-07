@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../data/paintings_data.dart' as data;
 import '../models/painting_model.dart';
@@ -26,42 +25,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// Apre l'AR richiedendo prima i permessi necessari per la fotocamera
-  void _openUniversalAR() async {
-    // Verifica lo stato del permesso della fotocamera
-    var status = await Permission.camera.status;
-
-    // Se il permesso non è stato ancora concesso, lo richiede
-    if (status.isDenied) {
-      status = await Permission.camera.request();
-    }
-
-    // Se il permesso è concesso, naviga verso la schermata AR
-    if (status.isGranted) {
-      if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const views.ARViewScreen(
-            painting: null, // Modalità universale: riconosce tutti i marker
-          ),
+  // Apre l'AR senza dipinto specifico - riconosce tutti i markers
+  void _openUniversalAR() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const views.ARViewScreen(
+          painting: null, // Nessun dipinto specifico - riconosce tutti
         ),
-      );
-    } else if (status.isPermanentlyDenied) {
-      // Se l'utente ha negato permanentemente, suggerisce di aprire le impostazioni di sistema
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Permesso fotocamera negato. Abilitalo nelle impostazioni per usare l\'AR.',
-          ),
-          action: SnackBarAction(
-            label: 'Impostazioni',
-            onPressed: openAppSettings,
-          ),
-        ),
-      );
-    }
+      ),
+    );
   }
 
   List<PaintingModel> _getFilteredPaintings() {
@@ -72,27 +45,26 @@ class _HomeScreenState extends State<HomeScreen> {
     return data.PaintingsData.paintings.where((painting) {
       switch (_selectedFilter) {
         case 'slider':
-          return ![
-            'painting-4',
-            'painting-6',
-            'painting-7',
-            'painting-8',
-            'painting-9',
-            'painting-10',
-          ].contains(painting.id);
+        // Dipinti con slider trasparenza (restauro classico)
+          return !['painting-4', 'painting-6', 'painting-7', 'painting-8', 'painting-9', 'painting-10']
+              .contains(painting.id);
+
         case 'interactive':
+        // Dipinti con hotspot interattivi
           return painting.hasInteractiveHotspots == true;
+
         case 'transition':
-          return painting.alternateImages != null &&
-              painting.alternateImages!.isNotEmpty;
+        // Dipinti con transizione manuale tra immagini
+          return painting.alternateImages != null && painting.alternateImages!.isNotEmpty;
+
         case 'effects':
-          return [
-            'painting-4',
-            'painting-6',
-            'painting-7',
-          ].contains(painting.id);
+        // Dipinti con effetti speciali (chiesa, pannelli)
+          return ['painting-4', 'painting-6', 'painting-7'].contains(painting.id);
+
         case 'info':
+        // Dipinti solo informazioni
           return painting.id == 'painting-8';
+
         default:
           return true;
       }
@@ -105,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.grey[50],
       body: CustomScrollView(
         slivers: [
+          // AppBar espandibile con logo
           SliverAppBar(
             expandedHeight: 200,
             floating: false,
@@ -126,6 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
+                  // Gradient background
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
@@ -139,12 +113,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
+                  // Pattern
                   Positioned.fill(
                     child: Opacity(
                       opacity: 0.03,
-                      child: CustomPaint(painter: _GeometricPatternPainter()),
+                      child: CustomPaint(
+                        painter: _GeometricPatternPainter(),
+                      ),
                     ),
                   ),
+                  // Logo
                   Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -162,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
+                  // Fade bottom
                   Positioned(
                     bottom: 0,
                     left: 0,
@@ -184,6 +163,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+
+          // Bottone AR principale (cliccabile)
           SliverToBoxAdapter(
             child: Container(
               margin: const EdgeInsets.all(20),
@@ -259,6 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        // Badge informativo
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -295,6 +277,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+
+          // Card link doc
           SliverToBoxAdapter(
             child: Container(
               margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -309,7 +293,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [Color(0xFF2c2c2c), Color(0xFF1a1a1a)],
+                        colors: [
+                          Color(0xFF2c2c2c),
+                          Color(0xFF1a1a1a),
+                        ],
                       ),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
@@ -378,6 +365,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+
+          // Filtri
           SliverToBoxAdapter(
             child: Container(
               margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -418,16 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         value: 'slider',
                         icon: Icons.tune,
                         count: data.PaintingsData.paintings
-                            .where(
-                              (p) => ![
-                                'painting-4',
-                                'painting-6',
-                                'painting-7',
-                                'painting-8',
-                                'painting-9',
-                                'painting-10',
-                              ].contains(p.id),
-                            )
+                            .where((p) => !['painting-4', 'painting-6', 'painting-7', 'painting-8', 'painting-9', 'painting-10'].contains(p.id))
                             .length,
                       ),
                       _buildFilterChip(
@@ -464,79 +444,85 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+
+          // Griglia di dipinti
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: _getFilteredPaintings().isEmpty
                 ? SliverToBoxAdapter(
-                    child: Center(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 40),
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 15,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 64,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Nessun dipinto trovato',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Prova a selezionare un altro filtro',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 40),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 15,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Nessun dipinto trovato',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[800],
                         ),
                       ),
-                    ),
-                  )
-                : SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 1,
-                          childAspectRatio: 0.85,
-                          mainAxisSpacing: 20,
+                      const SizedBox(height: 8),
+                      Text(
+                        'Prova a selezionare un altro filtro',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
                         ),
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final filteredPaintings = _getFilteredPaintings();
-                      final painting = filteredPaintings[index];
-                      return PaintingCard(
-                        painting: painting,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  PaintingDetailScreen(painting: painting),
-                            ),
-                          );
-                        },
-                      );
-                    }, childCount: _getFilteredPaintings().length),
+                      ),
+                    ],
                   ),
+                ),
+              ),
+            )
+                : SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 1,
+                childAspectRatio: 0.85,
+                mainAxisSpacing: 20,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                  final filteredPaintings = _getFilteredPaintings();
+                  final painting = filteredPaintings[index];
+                  return PaintingCard(
+                    painting: painting,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PaintingDetailScreen(
+                            painting: painting,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                childCount: _getFilteredPaintings().length,
+              ),
+            ),
           ),
+
           const SliverToBoxAdapter(child: SizedBox(height: 50)),
         ],
       ),
@@ -550,6 +536,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required int count,
   }) {
     final bool isSelected = _selectedFilter == value;
+
     return FilterChip(
       selected: isSelected,
       label: Row(
@@ -593,13 +580,19 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       selectedColor: Colors.black,
       backgroundColor: Colors.grey[100],
+      checkmarkColor: Colors.white,
       showCheckmark: false,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      onSelected: (selected) => setState(() => _selectedFilter = value),
+      onSelected: (selected) {
+        setState(() {
+          _selectedFilter = value;
+        });
+      },
     );
   }
 }
 
+// Pattern geometrico
 class _GeometricPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -607,7 +600,9 @@ class _GeometricPatternPainter extends CustomPainter {
       ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
+
     const spacing = 40.0;
+
     for (double y = 0; y < size.height; y += spacing) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
