@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Allow AR Detection app needs AR here.</string>
+	<string>Questa app richiede l'accesso alla fotocamera per inquadrare i dipinti e mostrare i contenuti in Realtà Aumentata.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
