@@ -5,6 +5,7 @@ import 'package:arkit_plugin/arkit_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
+import 'package:permission_handler/permission_handler.dart';
 
 import '../data/paintings_data.dart';
 import '../models/painting_model.dart';
@@ -22,7 +23,6 @@ import '../widgets/hotspot_detail_view.dart';
 
 class ARViewScreen extends StatefulWidget {
   final PaintingModel? painting;
-
   const ARViewScreen({super.key, this.painting});
 
   @override
@@ -30,6 +30,8 @@ class ARViewScreen extends StatefulWidget {
 }
 
 class _ARViewScreenState extends State<ARViewScreen> {
+  bool _hasCameraPermission = false;
+
   ARKitController? arkitController;
   Key _arViewKey = UniqueKey();
   bool imageDetected = false;
@@ -67,9 +69,70 @@ class _ARViewScreenState extends State<ARViewScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.painting != null) {
-      _preloadImages();
+      _checkPermissionAndInit();
     }
+
+  Future<void> _checkPermissionAndInit() async {
+    // 1. Controlliamo lo stato attuale del permesso
+    var status = await Permission.camera.status;
+
+    // 2. Se è negato permanentemente, dobbiamo mandare l'utente nelle impostazioni
+    if (status.isPermanentlyDenied) {
+      if (mounted) {
+        _showPermissionDialog();
+      }
+      return;
+    }
+
+    // 3. Se non è concesso, lo richiediamo (apparirà il popup se è la prima/seconda volta)
+    if (!status.isGranted) {
+      status = await Permission.camera.request();
+    }
+
+    // 4. Gestiamo il risultato finale
+    if (status.isGranted) {
+      if (mounted) {
+        setState(() => _hasCameraPermission = true);
+        _preloadImages();
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Accesso fotocamera negato. Abilitalo nelle impostazioni.'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        // Opzionale: puoi chiamare _showPermissionDialog() anche qui
+      }
+    }
+  }
+
+// Dialogo d'aiuto per l'utente bloccato
+  void _showPermissionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Fotocamera Disabilitata'),
+        content: const Text(
+            'Per usare la Realtà Aumentata è necessario abilitare la fotocamera nelle impostazioni del dispositivo.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await openAppSettings(); // Apre le impostazioni di iOS dell'app
+              if (mounted) Navigator.pop(context);
+            },
+            child: const Text('Vai alle Impostazioni'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -318,15 +381,22 @@ class _ARViewScreenState extends State<ARViewScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          ARKitSceneView(
-            key: _arViewKey,
-            detectionImagesGroupName: 'AR Resources',
-            maximumNumberOfTrackedImages: 2,
-            enableTapRecognizer: true,
-            onARKitViewCreated: _onARKitViewCreated,
-          ),
+          // IL MOTORE AR PARTE SOLO SE ABBIAMO IL PERMESSO
+          if (_hasCameraPermission)
+            ARKitSceneView(
+              key: _arViewKey,
+              detectionImagesGroupName: 'AR Resources',
+              maximumNumberOfTrackedImages: 2,
+              enableTapRecognizer: true,
+              onARKitViewCreated: _onARKitViewCreated,
+            )
+          else
+            const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
 
-          if (!_isARKitReady) const LoadingOverlay(),
+          // Mostriamo il caricamento solo se il permesso c'è ma ARKit non è ancora pronto
+          if (!_isARKitReady && _hasCameraPermission) const LoadingOverlay(),
 
           if (!imageDetected && _isARKitReady)
             InstructionsCard(
@@ -420,7 +490,10 @@ class _ARViewScreenState extends State<ARViewScreen> {
   );
 
   // ————— ARKit callbacks —————
-  void _onARKitViewCreated(ARKitController controller) {
+  void _onARKitViewCreated(ARKitController controller) async {
+    debugPrint('🎬 Inizializzazione ARKit...');
+
+    // Setup ARKit controller - solo se il permesso è stato concesso
     arkitController = controller;
     arkitController!.onAddNodeForAnchor = _handleAddAnchor;
 
